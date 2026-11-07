@@ -3,6 +3,7 @@
 import { tanstackConfig } from '@tanstack/eslint-config'
 import reactHooks from 'eslint-plugin-react-hooks'
 import jsxA11y from 'eslint-plugin-jsx-a11y'
+import storybook from 'eslint-plugin-storybook'
 
 export default [
   {
@@ -14,11 +15,14 @@ export default [
       'src/routeTree.gen.ts',
       'eslint.config.js',
       'prettier.config.js',
+      'storybook-static',
+      '!.storybook',
     ],
   },
   ...tanstackConfig,
   reactHooks.configs.flat.recommended,
   jsxA11y.flatConfigs.recommended,
+  ...storybook.configs['flat/recommended'],
   {
     rules: {
       'import/no-cycle': 'off',
