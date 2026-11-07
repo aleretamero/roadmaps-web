@@ -2098,6 +2098,31 @@ components:
               type: string
               format: date-time
             updatedAt: *id013
+            lastSessionOn:
+              description: Dia da última sessão registrada.
+              anyOf:
+                - *id011
+                - type: 'null'
+            stageDates:
+              type: object
+              description: Quando o tópico chegou em cada etapa (null se ainda não chegou).
+              properties:
+                studying:
+                  anyOf:
+                    - *id011
+                    - type: 'null'
+                practicing:
+                  anyOf:
+                    - *id011
+                    - type: 'null'
+                completed:
+                  anyOf:
+                    - *id011
+                    - type: 'null'
+              required:
+                - studying
+                - practicing
+                - completed
           required:
             - description
             - moduleId
@@ -2108,6 +2133,8 @@ components:
             - counts
             - createdAt
             - updatedAt
+            - lastSessionOn
+            - stageDates
     ModuleNode:
       type: object
       properties:
