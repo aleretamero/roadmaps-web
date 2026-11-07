@@ -309,3 +309,59 @@ export function useChoosePath(roadmapId: number) {
     onSuccess: () => invalidateStudy(qc),
   })
 }
+
+type RoadmapDetail = Schemas['RoadmapDetail']
+
+/**
+ * Mudanças de ordem no roadmap (tópicos, módulos, mover entre módulos) com
+ * atualização otimista: a lista muda na hora e volta se a API recusar.
+ */
+export function useRoadmapReorder(roadmapId: number) {
+  const qc = useQueryClient()
+  const key = roadmapQuery(roadmapId).queryKey
+  return useMutation({
+    mutationFn: async (change: {
+      next: RoadmapDetail
+      call:
+        | { kind: 'topics'; moduleId: number; ids: Array<number> }
+        | { kind: 'modules'; ids: Array<number> }
+        | { kind: 'move'; topicId: number; moduleId: number; position: number }
+    }) => {
+      const c = change.call
+      if (c.kind === 'topics')
+        return unwrap(
+          api.PUT('/modules/{id}/topics/order', {
+            ...id(c.moduleId),
+            body: { ids: c.ids },
+          }),
+        )
+      if (c.kind === 'modules')
+        return unwrap(
+          api.PUT('/roadmaps/{id}/modules/order', {
+            ...id(roadmapId),
+            body: { ids: c.ids },
+          }),
+        )
+      return unwrap(
+        api.POST('/topics/{id}/move', {
+          ...id(c.topicId),
+          body: { moduleId: c.moduleId, position: c.position },
+        }),
+      )
+    },
+    onMutate: async ({ next }) => {
+      await qc.cancelQueries({ queryKey: key })
+      const previous = qc.getQueryData(key)
+      qc.setQueryData(key, next)
+      return { previous }
+    },
+    onError: (_e, _v, ctx) => {
+      if (ctx?.previous) qc.setQueryData(key, ctx.previous)
+    },
+    onSettled: () => {
+      void qc.invalidateQueries({ queryKey: key })
+      void qc.invalidateQueries({ queryKey: keys.modules.all })
+      void qc.invalidateQueries({ queryKey: keys.dashboard.all })
+    },
+  })
+}
