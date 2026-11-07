@@ -1,0 +1,3192 @@
+openapi: 3.1.0
+info:
+  title: Roadmaps API
+  version: 1.0.0
+  description:
+    Contrato v1 da API do Gestor pessoal de roadmaps e conhecimento. Gerado por contracts/build-openapi.py a partir
+    do planejamento (https://claude.ai/artifact/NyCNWDSjbLTa2Ea6B3MJTy).
+servers:
+  - url: /api/v1
+security:
+  - cookie: []
+paths:
+  /auth/login/{provider}:
+    get:
+      tags:
+        - Autenticação
+      operationId: login
+      summary: Inicia o OAuth e redireciona para o provedor
+      responses:
+        '302':
+          description: Redireciona para o provedor
+        '400': &id001
+          $ref: '#/components/responses/BadRequest'
+        '401': &id002
+          $ref: '#/components/responses/Unauthorized'
+        '404': &id003
+          $ref: '#/components/responses/NotFound'
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema:
+            type: string
+            enum:
+              - github
+              - google
+        - name: redirect
+          in: query
+          required: false
+          schema:
+            type: string
+      security: []
+  /auth/callback/{provider}:
+    get:
+      tags:
+        - Autenticação
+      operationId: authCallback
+      summary: 'Retorno do OAuth: cria a conta no primeiro acesso e grava o cookie'
+      responses:
+        '302':
+          description: Volta para o app
+        '400': *id001
+        '401': *id002
+        '404': *id003
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema:
+            type: string
+            enum:
+              - github
+              - google
+      security: []
+  /auth/logout:
+    post:
+      tags:
+        - Autenticação
+      operationId: logout
+      summary: Encerra a sessão
+      responses:
+        '204': &id005
+          description: Sem conteúdo
+        '400': *id001
+        '401': *id002
+        '404': *id003
+  /me:
+    get:
+      tags:
+        - Conta
+      operationId: getMe
+      summary: Usuário logado
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400': *id001
+        '401': *id002
+        '404': *id003
+    patch:
+      tags:
+        - Conta
+      operationId: updateMe
+      summary: Muda nome e fuso
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400': *id001
+        '401': *id002
+        '404': *id003
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+  /me/preferences:
+    get:
+      tags:
+        - Conta
+      operationId: getPreferences
+      summary: Preferências de estudo
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Preferences'
+        '400': *id001
+        '401': *id002
+        '404': *id003
+    put:
+      tags:
+        - Conta
+      operationId: updatePreferences
+      summary: Salva as preferências de estudo
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Preferences'
+        '400': *id001
+        '401': *id002
+        '404': *id003
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Preferences'
+  /dashboard:
+    get:
+      tags:
+        - Painel
+      operationId: getDashboard
+      summary: Hoje, semana, sequência, números, próximos 7 dias e atenção
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dashboard'
+        '400': *id001
+        '401': *id002
+        '404': *id003
+  /dashboard/activity:
+    get:
+      tags:
+        - Painel
+      operationId: getActivity
+      summary: Mapa de calor e totais
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Activity'
+        '400': *id001
+        '401': *id002
+        '404': *id003
+      parameters:
+        - name: weeks
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 52
+            default: 24
+  /search:
+    get:
+      tags:
+        - Busca
+      operationId: search
+      summary: Busca em tópicos, anotações e arquivos
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResults'
+        '400': *id001
+        '401': *id002
+        '404': *id003
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Aceita "frase exata", prefixo* e -excluir
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - topics
+              - notes
+              - files
+        - &id006
+          name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+        - &id007
+          name: cursor
+          in: query
+          required: false
+          schema:
+            type: string
+  /roadmaps:
+    get:
+      tags:
+        - Roadmaps
+      operationId: listRoadmaps
+      summary: Roadmaps com progresso e próximo tópico
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RoadmapSummary'
+        '400': *id001
+        '401': *id002
+        '404': *id003
+      parameters:
+        - name: archived
+          in: query
+          required: false
+          schema: &id004
+            type: boolean
+    post:
+      tags:
+        - Roadmaps
+      operationId: createRoadmap
+      summary: Cria um roadmap (vazio ou com módulos e tópicos)
+      responses:
+        '201':
+          description: Criado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoadmapDetail'
+          headers:
+            Location:
+              schema:
+                type: string
+        '400': *id001
+        '401': *id002
+        '404': *id003
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRoadmapRequest'
+  /roadmaps/import:
+    post:
+      tags:
+        - Importação
+      operationId: importRoadmap
+      summary: Cria um roadmap a partir do JSON
+      responses:
+        '201':
+          description: Criado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportResult'
+          headers:
+            Location:
+              schema:
+                type: string
+        '400': *id001
+        '401': *id002
+        '404': *id003
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ImportRoadmapRequest'
+      parameters:
+        - name: dryRun
+          in: query
+          required: false
+          schema: *id004
+  /roadmaps/{id}:
+    get:
+      tags:
+        - Roadmaps
+      operationId: getRoadmap
+      summary: 'Roadmap completo: módulos, dependências, escolhas e tópicos'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoadmapDetail'
+          headers: &id008
+            ETag:
+              schema:
+                type: string
+              description: Versão do recurso (RowVersion); mande em If-Match no PATCH
+        '400': *id001
+        '401': *id002
+        '404': *id003
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+    patch:
+      tags:
+        - Roadmaps
+      operationId: updateRoadmap
+      summary: Muda nome e objetivo
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoadmapDetail'
+        '400': *id001
+        '401': *id002
+        '404': *id003
+        '412': &id009
+          $ref: '#/components/responses/PreconditionFailed'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateRoadmapRequest'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - &id010
+          name: If-Match
+          in: header
+          required: false
+          schema:
+            type: string
+          description: ETag recebido no GET; versão velha responde 412
+    delete:
+      tags:
+        - Roadmaps
+      operationId: deleteRoadmap
+      summary: Apaga o roadmap
+      responses:
+        '204': *id005
+        '400': *id001
+        '401': *id002
+        '404': *id003
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+  /roadmaps/{id}/archive:
+    post:
+      tags:
+        - Roadmaps
+      operationId: archiveRoadmap
+      summary: Arquiva
+      responses:
+        '204': *id005
+        '400': *id001
+        '401': *id002
+        '404': *id003
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+  /roadmaps/{id}/unarchive:
+    post:
+      tags:
+        - Roadmaps
+      operationId: unarchiveRoadmap
+      summary: Devolve aos ativos
+      responses:
+        '204': *id005
+        '400': *id001
+        '401': *id002
+        '404': *id003
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+  /roadmaps/{id}/progress:
+    get:
+      tags:
+        - Roadmaps
+      operationId: getRoadmapProgress
+      summary: Aba Progresso
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoadmapProgress'
+        '400': *id001
+        '401': *id002
+        '404': *id003
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+  /roadmaps/{id}/path-choices/{branchModuleId}:
+    put:
+      tags:
+        - Roadmaps
+      operationId: choosePath
+      summary: Escolhe o caminho depois de um ponto de divisão
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PathChoice'
+        '400': *id001
+        '401': *id002
+        '404': *id003
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChoosePathRequest'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: branchModuleId
+          in: path
+          required: true
+          schema:
+            type: integer
+  /roadmaps/{id}/modules/order:
+    put:
+      tags:
+        - Módulos
+      operationId: reorderModules
+      summary: Nova ordem dos módulos
+      responses:
+        '204': *id005
+        '400': *id001
+        '401': *id002
+        '404': *id003
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IdList'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+  /roadmaps/{id}/changelog:
+    get:
+      tags:
+        - Histórico
+      operationId: getRoadmapChangelog
+      summary: Alterações do roadmap
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangeLogPage'
+        '400': *id001
+        '401': *id002
+        '404': *id003
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - *id006
+        - *id007
+  /roadmaps/{id}/import:
+    post:
+      tags:
+        - Importação
+      operationId: importModules
+      summary: Encaixa módulos num roadmap existente (after / alternativeTo)
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportResult'
+        '400': *id001
+        '401': *id002
+        '404': *id003
+        '422':
+          $ref: '#/components/responses/BadRequest'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ImportModulesRequest'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: dryRun
+          in: query
+          required: false
+          schema: *id004
+  /roadmaps/{id}/schedule/preview:
+    post:
+      tags:
+        - Agenda
+      operationId: previewSchedule
+      summary: Calcula o agendamento automático sem gravar
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SchedulePreview'
+        '400': *id001
+        '401': *id002
+        '404': *id003
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SchedulePreviewRequest'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+  /roadmaps/{id}/schedule:
+    post:
+      tags:
+        - Agenda
+      operationId: applySchedule
+      summary: Grava o agendamento automático
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SchedulePreview'
+        '400': *id001
+        '401': *id002
+        '404': *id003
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SchedulePreviewRequest'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+  /roadmaps/{id}/modules:
+    post:
+      tags:
+        - Módulos
+      operationId: createModule
+      summary: Cria um módulo
+      responses:
+        '201':
+          description: Criado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModuleDetail'
+          headers:
+            Location:
+              schema:
+                type: string
+        '400': *id001
+        '401': *id002
+        '404': *id003
+        '409':
+          $ref: '#/components/responses/Conflict'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateModuleRequest'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+  /modules/{id}:
+    get:
+      tags:
+        - Módulos
+      operationId: getModule
+      summary: Detalhe do módulo
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModuleDetail'
+          headers: *id008
+        '400': *id001
+        '401': *id002
+        '404': *id003
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+    patch:
+      tags:
+        - Módulos
+      operationId: updateModule
+      summary: Edita o módulo
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModuleDetail'
+        '400': *id001
+        '401': *id002
+        '404': *id003
+        '412': *id009
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateModuleRequest'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - *id010
+    delete:
+      tags:
+        - Módulos
+      operationId: deleteModule
+      summary: Apaga o módulo e os tópicos
+      responses:
+        '204': *id005
+        '400': *id001
+        '401': *id002
+        '404': *id003
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+  /modules/{id}/dependencies:
+    put:
+      tags:
+        - Módulos
+      operationId: setModuleDependencies
+      summary: Substitui a lista de "depois de"
+      responses:
+        '204': *id005
+        '400': *id001
+        '401': *id002
+        '404': *id003
+        '409': &id012
+          $ref: '#/components/responses/Conflict'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IdList'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+  /modules/{id}/timeline:
+    get:
+      tags:
+        - Histórico
+      operationId: getModuleTimeline
+      summary: Progresso nos tópicos e alterações do módulo
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimelinePage'
+        '400': *id001
+        '401': *id002
+        '404': *id003
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - progress
+              - changes
+        - *id006
+        - *id007
+  /modules/{id}/notes:
+    get:
+      tags:
+        - Anotações
+      operationId: listModuleNotes
+      summary: Anotações do módulo
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Note'
+        '400': *id001
+        '401': *id002
+        '404': *id003
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+    post:
+      tags:
+        - Anotações
+      operationId: createModuleNote
+      summary: Cria anotação no módulo
+      responses:
+        '201':
+          description: Criado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Note'
+          headers:
+            Location:
+              schema:
+                type: string
+        '400': *id001
+        '401': *id002
+        '404': *id003
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NoteRequest'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+  /modules/{id}/topics:
+    post:
+      tags:
+        - Tópicos
+      operationId: createTopics
+      summary: Cria um ou vários tópicos no fim do módulo
+      responses:
+        '201':
+          description: Criados
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TopicSummary'
+        '400': *id001
+        '401': *id002
+        '404': *id003
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTopicsRequest'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+  /modules/{id}/topics/order:
+    put:
+      tags:
+        - Tópicos
+      operationId: reorderTopics
+      summary: Nova ordem dos tópicos
+      responses:
+        '204': *id005
+        '400': *id001
+        '401': *id002
+        '404': *id003
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IdList'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+  /topics/{id}:
+    get:
+      tags:
+        - Tópicos
+      operationId: getTopic
+      summary: Detalhe do tópico
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TopicDetail'
+          headers: *id008
+        '400': *id001
+        '401': *id002
+        '404': *id003
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+    patch:
+      tags:
+        - Tópicos
+      operationId: updateTopic
+      summary: Edita o tópico
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TopicDetail'
+        '400': *id001
+        '401': *id002
+        '404': *id003
+        '412': *id009
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTopicRequest'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - *id010
+    delete:
+      tags:
+        - Tópicos
+      operationId: deleteTopic
+      summary: Apaga o tópico
+      responses:
+        '204': *id005
+        '400': *id001
+        '401': *id002
+        '404': *id003
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+  /topics/{id}/move:
+    post:
+      tags:
+        - Tópicos
+      operationId: moveTopic
+      summary: Leva o tópico para outro módulo
+      responses:
+        '204': *id005
+        '400': *id001
+        '401': *id002
+        '404': *id003
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MoveTopicRequest'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+  /topics/{id}/reopen:
+    post:
+      tags:
+        - Tópicos
+      operationId: reopenTopic
+      summary: Volta a etapa
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TopicDetail'
+        '400': *id001
+        '401': *id002
+        '404': *id003
+        '422':
+          $ref: '#/components/responses/BadRequest'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReopenTopicRequest'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+  /topics/{id}/timeline:
+    get:
+      tags:
+        - Histórico
+      operationId: getTopicTimeline
+      summary: O que você fez e histórico de alterações
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimelinePage'
+        '400': *id001
+        '401': *id002
+        '404': *id003
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - sessions
+              - changes
+        - *id006
+        - *id007
+  /topics/{id}/sessions:
+    post:
+      tags:
+        - Sessões
+      operationId: registerSession
+      summary: Registra uma sessão e devolve a etapa nova
+      responses:
+        '201':
+          description: Criada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionResult'
+        '400': *id001
+        '401': *id002
+        '404': *id003
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterSessionRequest'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+  /sessions:
+    get:
+      tags:
+        - Sessões
+      operationId: listSessions
+      summary: Sessões de um período
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SessionWithTopic'
+        '400': *id001
+        '401': *id002
+        '404': *id003
+      parameters:
+        - name: from
+          in: query
+          required: true
+          schema: &id011
+            type: string
+            format: date
+            example: '2026-11-07'
+        - name: to
+          in: query
+          required: true
+          schema: *id011
+  /sessions/{id}:
+    patch:
+      tags:
+        - Sessões
+      operationId: updateSession
+      summary: Corrige uma sessão (etapa recalculada)
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionResult'
+        '400': *id001
+        '401': *id002
+        '404': *id003
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateSessionRequest'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+    delete:
+      tags:
+        - Sessões
+      operationId: deleteSession
+      summary: Apaga uma sessão (etapa recalculada)
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  topic:
+                    $ref: '#/components/schemas/TopicSummary'
+                required:
+                  - topic
+        '400': *id001
+        '401': *id002
+        '404': *id003
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+  /schedule:
+    get:
+      tags:
+        - Agenda
+      operationId: getSchedule
+      summary: Agendamentos e sessões por dia
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Schedule'
+        '400': *id001
+        '401': *id002
+        '404': *id003
+      parameters:
+        - name: from
+          in: query
+          required: true
+          schema: *id011
+        - name: to
+          in: query
+          required: true
+          schema: *id011
+  /topics/{id}/schedule-entries:
+    post:
+      tags:
+        - Agenda
+      operationId: createScheduleEntry
+      summary: Agenda mais um dia
+      responses:
+        '201':
+          description: Criado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScheduleEntry'
+          headers:
+            Location:
+              schema:
+                type: string
+        '400': *id001
+        '401': *id002
+        '404': *id003
+        '409': *id012
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateScheduleEntryRequest'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+  /schedule-entries/{id}:
+    patch:
+      tags:
+        - Agenda
+      operationId: updateScheduleEntry
+      summary: Troca a data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScheduleEntry'
+        '400': *id001
+        '401': *id002
+        '404': *id003
+        '409': *id012
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateScheduleEntryRequest'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+    delete:
+      tags:
+        - Agenda
+      operationId: deleteScheduleEntry
+      summary: Tira o tópico daquele dia
+      responses:
+        '204': *id005
+        '400': *id001
+        '401': *id002
+        '404': *id003
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+  /topics/{id}/notes:
+    get:
+      tags:
+        - Anotações
+      operationId: listTopicNotes
+      summary: Anotações do tópico
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Note'
+        '400': *id001
+        '401': *id002
+        '404': *id003
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+    post:
+      tags:
+        - Anotações
+      operationId: createTopicNote
+      summary: Cria anotação no tópico
+      responses:
+        '201':
+          description: Criado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Note'
+          headers:
+            Location:
+              schema:
+                type: string
+        '400': *id001
+        '401': *id002
+        '404': *id003
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NoteRequest'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+  /notes/{id}:
+    patch:
+      tags:
+        - Anotações
+      operationId: updateNote
+      summary: Edita a anotação
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Note'
+          headers: *id008
+        '400': *id001
+        '401': *id002
+        '404': *id003
+        '412': *id009
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NoteRequest'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - *id010
+    delete:
+      tags:
+        - Anotações
+      operationId: deleteNote
+      summary: Apaga a anotação
+      responses:
+        '204': *id005
+        '400': *id001
+        '401': *id002
+        '404': *id003
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+  /topics/{id}/resources:
+    get:
+      tags:
+        - Referências
+      operationId: listResources
+      summary: Links de estudo do tópico
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Resource'
+        '400': *id001
+        '401': *id002
+        '404': *id003
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+    post:
+      tags:
+        - Referências
+      operationId: createResource
+      summary: Adiciona um link
+      responses:
+        '201':
+          description: Criado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Resource'
+          headers:
+            Location:
+              schema:
+                type: string
+        '400': *id001
+        '401': *id002
+        '404': *id003
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResourceRequest'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+  /resources/{id}:
+    patch:
+      tags:
+        - Referências
+      operationId: updateResource
+      summary: Edita o link
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Resource'
+        '400': *id001
+        '401': *id002
+        '404': *id003
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResourceRequest'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+    delete:
+      tags:
+        - Referências
+      operationId: deleteResource
+      summary: Remove o link
+      responses:
+        '204': *id005
+        '400': *id001
+        '401': *id002
+        '404': *id003
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+  /topics/{id}/files:
+    get:
+      tags:
+        - Arquivos
+      operationId: getFileTree
+      summary: Árvore de pastas e arquivos
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileTree'
+        '400': *id001
+        '401': *id002
+        '404': *id003
+        '409': *id012
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+    post:
+      tags:
+        - Arquivos
+      operationId: uploadFile
+      summary: Envia um arquivo (até 20 MB)
+      responses:
+        '201':
+          description: Criado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileNode'
+          headers:
+            Location:
+              schema:
+                type: string
+        '400': *id001
+        '401': *id002
+        '404': *id003
+        '409': *id012
+        '413':
+          $ref: '#/components/responses/BadRequest'
+        '502':
+          $ref: '#/components/responses/BadRequest'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                path:
+                  type: string
+              required:
+                - file
+                - path
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+    delete:
+      tags:
+        - Arquivos
+      operationId: deleteFile
+      summary: Apaga arquivo ou pasta
+      responses:
+        '204': *id005
+        '400': *id001
+        '401': *id002
+        '404': *id003
+        '409': *id012
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: path
+          in: query
+          required: true
+          schema:
+            type: string
+  /topics/{id}/folders:
+    post:
+      tags:
+        - Arquivos
+      operationId: createFolder
+      summary: Cria uma pasta
+      responses:
+        '201':
+          description: Criado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileNode'
+          headers:
+            Location:
+              schema:
+                type: string
+        '400': *id001
+        '401': *id002
+        '404': *id003
+        '409': *id012
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateFolderRequest'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+  /topics/{id}/files/move:
+    post:
+      tags:
+        - Arquivos
+      operationId: moveFile
+      summary: Renomeia ou move
+      responses:
+        '204': *id005
+        '400': *id001
+        '401': *id002
+        '404': *id003
+        '409': *id012
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MoveFileRequest'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+  /files/{id}/content:
+    get:
+      tags:
+        - Arquivos
+      operationId: getFileContent
+      summary: Conteúdo para pré-visualização
+      responses:
+        '200':
+          description: Conteúdo do arquivo
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '400': *id001
+        '401': *id002
+        '404': *id003
+        '409': *id012
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+  /integrations:
+    get:
+      tags:
+        - Integrações
+      operationId: listIntegrations
+      summary: Situação de cada integração
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Integration'
+        '400': *id001
+        '401': *id002
+        '404': *id003
+  /integrations/google-drive/connect:
+    get:
+      tags:
+        - Integrações
+      operationId: connectDrive
+      summary: Inicia o OAuth do Google Drive
+      responses:
+        '302':
+          description: Redireciona para o Google
+        '400': *id001
+        '401': *id002
+        '404': *id003
+      parameters:
+        - name: returnTo
+          in: query
+          required: false
+          schema:
+            type: string
+  /integrations/google-drive/callback:
+    get:
+      tags:
+        - Integrações
+      operationId: driveCallback
+      summary: Guarda o token e cria a pasta raiz
+      responses:
+        '302':
+          description: Volta para o app
+        '400': *id001
+        '401': *id002
+        '404': *id003
+  /integrations/google-drive:
+    patch:
+      tags:
+        - Integrações
+      operationId: updateDrive
+      summary: Muda o nome da pasta
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Integration'
+        '400': *id001
+        '401': *id002
+        '404': *id003
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateDriveRequest'
+    delete:
+      tags:
+        - Integrações
+      operationId: disconnectDrive
+      summary: Desconecta o Drive
+      responses:
+        '204': *id005
+        '400': *id001
+        '401': *id002
+        '404': *id003
+  /notifications/public-key:
+    get:
+      tags:
+        - Notificações
+      operationId: getPushPublicKey
+      summary: Chave VAPID
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PushPublicKey'
+        '400': *id001
+        '401': *id002
+        '404': *id003
+  /notifications/subscriptions:
+    post:
+      tags:
+        - Notificações
+      operationId: subscribePush
+      summary: Salva a assinatura do navegador
+      responses:
+        '201':
+          description: Criado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PushSubscription'
+          headers:
+            Location:
+              schema:
+                type: string
+        '400': *id001
+        '401': *id002
+        '404': *id003
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PushSubscriptionRequest'
+  /notifications/subscriptions/{id}:
+    delete:
+      tags:
+        - Notificações
+      operationId: unsubscribePush
+      summary: Remove a assinatura
+      responses:
+        '204': *id005
+        '400': *id001
+        '401': *id002
+        '404': *id003
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+  /notifications/test:
+    post:
+      tags:
+        - Notificações
+      operationId: sendTestPush
+      summary: Envia a notificação de teste
+      responses:
+        '204': *id005
+        '400': *id001
+        '401': *id002
+        '404': *id003
+components:
+  securitySchemes:
+    cookie:
+      type: apiKey
+      in: cookie
+      name: .Roadmaps.Session
+  responses:
+    BadRequest:
+      description: Requisição inválida
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+    Unauthorized:
+      description: Sem sessão
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+    NotFound:
+      description: Não encontrado (ou de outro usuário)
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+    Conflict:
+      description: 'Conflito (ex.: drive_not_connected, dependency_cycle, data repetida)'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+    PreconditionFailed:
+      description: Versão desatualizada (edit_conflict)
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+  schemas:
+    ProblemDetails:
+      type: object
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        code:
+          type: string
+          description: Código estável para o front decidir a mensagem
+          enum:
+            - validation_error
+            - not_found
+            - unauthorized
+            - edit_conflict
+            - dependency_cycle
+            - invalid_stage
+            - drive_not_connected
+            - conflict
+            - internal_error
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+          description: Erros por campo (validação e dry run da importação)
+        traceId:
+          type: string
+      required:
+        - type
+        - title
+        - status
+        - code
+    Stage:
+      type: string
+      enum:
+        - planned
+        - studying
+        - practicing
+        - completed
+    ModuleKind:
+      type: string
+      enum:
+        - required
+        - optional
+        - alternative
+    ModuleStatus:
+      type: string
+      enum:
+        - notStarted
+        - inProgress
+        - completed
+    Weekday:
+      type: string
+      enum:
+        - sunday
+        - monday
+        - tuesday
+        - wednesday
+        - thursday
+        - friday
+        - saturday
+    Progress:
+      type: object
+      properties:
+        completed:
+          type: integer
+          description: Tópicos obrigatórios concluídos
+        total:
+          type: integer
+          description: Tópicos obrigatórios
+        percent:
+          type: integer
+          minimum: 0
+          maximum: 100
+      required:
+        - completed
+        - total
+        - percent
+    StageTotals:
+      type: object
+      properties:
+        planned:
+          type: integer
+        studying:
+          type: integer
+        practicing:
+          type: integer
+        completed:
+          type: integer
+      required:
+        - planned
+        - studying
+        - practicing
+        - completed
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        avatarUrl:
+          anyOf:
+            - type: string
+              format: uri
+            - type: 'null'
+        timeZone:
+          type: string
+          example: America/Sao_Paulo
+      required:
+        - id
+        - name
+        - email
+        - avatarUrl
+        - timeZone
+    UpdateUserRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 120
+        timeZone:
+          type: string
+      required: []
+    Preferences:
+      type: object
+      properties:
+        studyDays:
+          type: array
+          items:
+            $ref: '#/components/schemas/Weekday'
+        includeOptional: *id004
+        homePage:
+          type: string
+          enum:
+            - dashboard
+            - roadmaps
+            - schedule
+        reminderEnabled: *id004
+        reminderTime:
+          type: string
+          pattern: ^\d{2}:\d{2}$
+          example: '20:00'
+      required:
+        - studyDays
+        - includeOptional
+        - homePage
+        - reminderEnabled
+        - reminderTime
+    TopicRef:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        moduleId:
+          type: integer
+        moduleTitle:
+          type: string
+        roadmapId:
+          type: integer
+        roadmapName:
+          type: string
+      required:
+        - id
+        - title
+        - moduleId
+        - moduleTitle
+        - roadmapId
+        - roadmapName
+    TopicSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        isOptional: *id004
+        stage:
+          $ref: '#/components/schemas/Stage'
+        position:
+          type: integer
+        startedOn:
+          anyOf:
+            - *id011
+            - type: 'null'
+        completedOn:
+          anyOf:
+            - *id011
+            - type: 'null'
+        dueDate:
+          anyOf:
+            - *id011
+            - type: 'null'
+        isLate: *id004
+        filesCount:
+          type: integer
+      required:
+        - id
+        - title
+        - isOptional
+        - stage
+        - position
+        - startedOn
+        - completedOn
+        - dueDate
+        - isLate
+        - filesCount
+    TopicDetail:
+      allOf:
+        - $ref: '#/components/schemas/TopicSummary'
+        - type: object
+          properties:
+            description:
+              anyOf:
+                - type: string
+                - type: 'null'
+            moduleId:
+              type: integer
+            moduleTitle:
+              type: string
+            roadmapId:
+              type: integer
+            roadmapName:
+              type: string
+            scheduleEntries:
+              type: array
+              items:
+                $ref: '#/components/schemas/ScheduleEntry'
+            counts:
+              type: object
+              properties:
+                sessions:
+                  type: integer
+                notes:
+                  type: integer
+                resources:
+                  type: integer
+                files:
+                  type: integer
+              required:
+                - sessions
+                - notes
+                - resources
+                - files
+            createdAt: &id013
+              type: string
+              format: date-time
+            updatedAt: *id013
+          required:
+            - description
+            - moduleId
+            - moduleTitle
+            - roadmapId
+            - roadmapName
+            - scheduleEntries
+            - counts
+            - createdAt
+            - updatedAt
+    ModuleNode:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          anyOf:
+            - type: string
+            - type: 'null'
+        kind:
+          $ref: '#/components/schemas/ModuleKind'
+        position:
+          type: integer
+        dependsOn:
+          type: array
+          items:
+            type: integer
+        startedOn:
+          anyOf:
+            - *id011
+            - type: 'null'
+        status:
+          $ref: '#/components/schemas/ModuleStatus'
+        progress:
+          $ref: '#/components/schemas/Progress'
+        topics:
+          type: array
+          items:
+            $ref: '#/components/schemas/TopicSummary'
+      required:
+        - id
+        - title
+        - description
+        - kind
+        - position
+        - dependsOn
+        - startedOn
+        - status
+        - progress
+        - topics
+    ModuleDetail:
+      allOf:
+        - $ref: '#/components/schemas/ModuleNode'
+        - type: object
+          properties:
+            roadmapId:
+              type: integer
+            roadmapName:
+              type: string
+            createdAt: *id013
+            updatedAt: *id013
+          required:
+            - roadmapId
+            - roadmapName
+            - createdAt
+            - updatedAt
+    PathChoice:
+      type: object
+      properties:
+        branchModuleId:
+          type: integer
+        chosenModuleId:
+          type: integer
+      required:
+        - branchModuleId
+        - chosenModuleId
+    RoadmapSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        goal:
+          anyOf:
+            - type: string
+            - type: 'null'
+        archivedAt:
+          anyOf:
+            - *id013
+            - type: 'null'
+        progress:
+          $ref: '#/components/schemas/Progress'
+        nextTopic:
+          anyOf:
+            - $ref: '#/components/schemas/TopicRef'
+            - type: 'null'
+        modulesCount:
+          type: integer
+        topicsCount:
+          type: integer
+        startedOn:
+          anyOf:
+            - *id011
+            - type: 'null'
+        updatedAt: *id013
+      required:
+        - id
+        - name
+        - goal
+        - archivedAt
+        - progress
+        - nextTopic
+        - modulesCount
+        - topicsCount
+        - startedOn
+        - updatedAt
+    RoadmapDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        goal:
+          anyOf:
+            - type: string
+            - type: 'null'
+        archivedAt:
+          anyOf:
+            - *id013
+            - type: 'null'
+        startedOn:
+          anyOf:
+            - *id011
+            - type: 'null'
+        progress:
+          $ref: '#/components/schemas/Progress'
+        modules:
+          type: array
+          items:
+            $ref: '#/components/schemas/ModuleNode'
+        pathChoices:
+          type: array
+          items:
+            $ref: '#/components/schemas/PathChoice'
+        createdAt: *id013
+        updatedAt: *id013
+      required:
+        - id
+        - name
+        - goal
+        - archivedAt
+        - startedOn
+        - progress
+        - modules
+        - pathChoices
+        - createdAt
+        - updatedAt
+    RoadmapProgress:
+      type: object
+      properties:
+        progress:
+          $ref: '#/components/schemas/Progress'
+        totals:
+          $ref: '#/components/schemas/StageTotals'
+        startedOn:
+          anyOf:
+            - *id011
+            - type: 'null'
+        groups:
+          type: object
+          properties:
+            inProgress:
+              type: array
+              items:
+                $ref: '#/components/schemas/ModuleNode'
+            upcoming:
+              type: array
+              items:
+                $ref: '#/components/schemas/ModuleNode'
+            completed:
+              type: array
+              items:
+                $ref: '#/components/schemas/ModuleNode'
+            notChosen:
+              type: array
+              items:
+                $ref: '#/components/schemas/ModuleNode'
+          required:
+            - inProgress
+            - upcoming
+            - completed
+            - notChosen
+      required:
+        - progress
+        - totals
+        - startedOn
+        - groups
+    CreateRoadmapRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 120
+        goal:
+          anyOf:
+            - type: string
+              maxLength: 500
+            - type: 'null'
+        modules:
+          type: array
+          items:
+            $ref: '#/components/schemas/ImportModule'
+      required:
+        - name
+    UpdateRoadmapRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 120
+        goal:
+          anyOf:
+            - type: string
+              maxLength: 500
+            - type: 'null'
+      required: []
+    CreateModuleRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          maxLength: 120
+        description:
+          anyOf:
+            - type: string
+              maxLength: 500
+            - type: 'null'
+        kind:
+          $ref: '#/components/schemas/ModuleKind'
+        after:
+          type: array
+          items:
+            type: integer
+        alternativeTo:
+          anyOf:
+            - type: integer
+            - type: 'null'
+      required:
+        - title
+    UpdateModuleRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          maxLength: 120
+        description:
+          anyOf:
+            - type: string
+            - type: 'null'
+        kind:
+          $ref: '#/components/schemas/ModuleKind'
+      required: []
+    IdList:
+      type: object
+      properties:
+        ids:
+          type: array
+          items:
+            type: integer
+      required:
+        - ids
+    NewTopic:
+      type: object
+      properties:
+        title:
+          type: string
+          maxLength: 160
+        isOptional: *id004
+        date:
+          anyOf:
+            - *id011
+            - type: 'null'
+      required:
+        - title
+    CreateTopicsRequest:
+      type: object
+      properties:
+        topics:
+          type: array
+          items:
+            $ref: '#/components/schemas/NewTopic'
+      required:
+        - topics
+    UpdateTopicRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          maxLength: 160
+        description:
+          anyOf:
+            - type: string
+              maxLength: 2000
+            - type: 'null'
+        isOptional: *id004
+      required: []
+    MoveTopicRequest:
+      type: object
+      properties:
+        moduleId:
+          type: integer
+        position:
+          type: integer
+          minimum: 0
+      required:
+        - moduleId
+        - position
+    ReopenTopicRequest:
+      type: object
+      properties:
+        stage:
+          $ref: '#/components/schemas/Stage'
+      required:
+        - stage
+    ChoosePathRequest:
+      type: object
+      properties:
+        chosenModuleId:
+          type: integer
+      required:
+        - chosenModuleId
+    ImportTopic:
+      type: object
+      properties:
+        title:
+          type: string
+        isOptional: *id004
+      required:
+        - title
+    ImportModule:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        kind:
+          $ref: '#/components/schemas/ModuleKind'
+        after:
+          type: array
+          items:
+            type: string
+            description: Título de um módulo já existente ou do mesmo arquivo
+        alternativeTo:
+          type: string
+          description: Título do módulo do qual este é alternativa
+        topics:
+          type: array
+          items:
+            $ref: '#/components/schemas/ImportTopic'
+      required:
+        - title
+    ImportRoadmapRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        goal:
+          type: string
+        modules:
+          type: array
+          items:
+            $ref: '#/components/schemas/ImportModule'
+      required:
+        - name
+        - modules
+    ImportModulesRequest:
+      type: object
+      properties:
+        modules:
+          type: array
+          items:
+            $ref: '#/components/schemas/ImportModule'
+      required:
+        - modules
+    ImportResult:
+      type: object
+      properties:
+        roadmapId:
+          type: integer
+        modulesCreated:
+          type: integer
+        topicsCreated:
+          type: integer
+        dryRun: *id004
+      required:
+        - roadmapId
+        - modulesCreated
+        - topicsCreated
+        - dryRun
+    Session:
+      type: object
+      properties:
+        id:
+          type: integer
+        topicId:
+          type: integer
+        day: *id011
+        studied: *id004
+        practiced: *id004
+        completed: *id004
+        note:
+          anyOf:
+            - type: string
+            - type: 'null'
+        stageBefore:
+          $ref: '#/components/schemas/Stage'
+        stageAfter:
+          $ref: '#/components/schemas/Stage'
+        createdAt: *id013
+      required:
+        - id
+        - topicId
+        - day
+        - studied
+        - practiced
+        - completed
+        - note
+        - stageBefore
+        - stageAfter
+        - createdAt
+    RegisterSessionRequest:
+      type: object
+      properties:
+        day: *id011
+        studied: *id004
+        practiced: *id004
+        completed: *id004
+        note:
+          anyOf:
+            - type: string
+              maxLength: 2000
+            - type: 'null'
+      required:
+        - day
+    UpdateSessionRequest:
+      type: object
+      properties:
+        day: *id011
+        studied: *id004
+        practiced: *id004
+        completed: *id004
+        note:
+          anyOf:
+            - type: string
+            - type: 'null'
+      required: []
+    SessionResult:
+      type: object
+      properties:
+        session:
+          $ref: '#/components/schemas/Session'
+        topic:
+          type: object
+          properties:
+            id:
+              type: integer
+            stage:
+              $ref: '#/components/schemas/Stage'
+            startedOn:
+              anyOf:
+                - *id011
+                - type: 'null'
+            completedOn:
+              anyOf:
+                - *id011
+                - type: 'null'
+          required:
+            - id
+            - stage
+            - startedOn
+            - completedOn
+      required:
+        - session
+        - topic
+    SessionWithTopic:
+      allOf:
+        - $ref: '#/components/schemas/Session'
+        - type: object
+          properties:
+            topic:
+              $ref: '#/components/schemas/TopicRef'
+          required:
+            - topic
+    ScheduleEntry:
+      type: object
+      properties:
+        id:
+          type: integer
+        topicId:
+          type: integer
+        date: *id011
+        source:
+          type: string
+          enum:
+            - manual
+            - auto
+      required:
+        - id
+        - topicId
+        - date
+        - source
+    CreateScheduleEntryRequest:
+      type: object
+      properties:
+        date: *id011
+      required:
+        - date
+    ScheduleDay:
+      type: object
+      properties:
+        date: *id011
+        isStudyDay: *id004
+        entries:
+          type: array
+          items:
+            type: object
+            properties:
+              entry:
+                $ref: '#/components/schemas/ScheduleEntry'
+              topic:
+                $ref: '#/components/schemas/TopicRef'
+              stage:
+                $ref: '#/components/schemas/Stage'
+              isLate: *id004
+            required:
+              - entry
+              - topic
+              - stage
+              - isLate
+        sessions:
+          type: array
+          items:
+            $ref: '#/components/schemas/SessionWithTopic'
+      required:
+        - date
+        - isStudyDay
+        - entries
+        - sessions
+    Schedule:
+      type: object
+      properties:
+        from: *id011
+        to: *id011
+        days:
+          type: array
+          items:
+            $ref: '#/components/schemas/ScheduleDay'
+      required:
+        - from
+        - to
+        - days
+    SchedulePreviewRequest:
+      type: object
+      properties:
+        startDate: *id011
+        includeOptional: *id004
+        topicIds:
+          type: array
+          items:
+            type: integer
+      required:
+        - startDate
+    SchedulePreview:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              topicId:
+                type: integer
+              title:
+                type: string
+              moduleTitle:
+                type: string
+              date: *id011
+            required:
+              - topicId
+              - title
+              - moduleTitle
+              - date
+        skipped:
+          type: array
+          items:
+            type: object
+            properties:
+              topicId:
+                type: integer
+              title:
+                type: string
+              reason:
+                type: string
+                enum:
+                  - completed
+                  - optional
+                  - notChosen
+            required:
+              - topicId
+              - title
+              - reason
+      required:
+        - items
+        - skipped
+    DashboardTopic:
+      type: object
+      properties:
+        topic:
+          $ref: '#/components/schemas/TopicRef'
+        stage:
+          $ref: '#/components/schemas/Stage'
+        isLate: *id004
+        dueDate:
+          anyOf:
+            - *id011
+            - type: 'null'
+      required:
+        - topic
+        - stage
+        - isLate
+        - dueDate
+    Dashboard:
+      type: object
+      properties:
+        today:
+          type: array
+          items:
+            $ref: '#/components/schemas/DashboardTopic'
+        week:
+          type: array
+          items:
+            type: object
+            properties:
+              date: *id011
+              isStudyDay: *id004
+              sessionsCount:
+                type: integer
+              plannedCount:
+                type: integer
+              status:
+                type: string
+                enum:
+                  - done
+                  - planned
+                  - missed
+                  - rest
+                  - future
+            required:
+              - date
+              - isStudyDay
+              - sessionsCount
+              - plannedCount
+              - status
+        streak:
+          type: object
+          properties:
+            current:
+              type: integer
+            best:
+              type: integer
+          required:
+            - current
+            - best
+        weekStats:
+          type: object
+          properties:
+            sessions:
+              type: integer
+            studyDays:
+              type: integer
+            topicsCompleted:
+              type: integer
+          required:
+            - sessions
+            - studyDays
+            - topicsCompleted
+        roadmaps:
+          type: array
+          items:
+            $ref: '#/components/schemas/RoadmapSummary'
+        next7Days:
+          type: array
+          items:
+            type: object
+            properties:
+              date: *id011
+              topics:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DashboardTopic'
+            required:
+              - date
+              - topics
+        attention:
+          type: array
+          items:
+            $ref: '#/components/schemas/DashboardTopic'
+      required:
+        - today
+        - week
+        - streak
+        - weekStats
+        - roadmaps
+        - next7Days
+        - attention
+    Activity:
+      type: object
+      properties:
+        weeks:
+          type: integer
+        days:
+          type: array
+          items:
+            type: object
+            properties:
+              date: *id011
+              count:
+                type: integer
+              topics:
+                type: array
+                items:
+                  type: string
+            required:
+              - date
+              - count
+              - topics
+        totals:
+          type: object
+          properties:
+            studied:
+              type: integer
+            practiced:
+              type: integer
+            completed:
+              type: integer
+          required:
+            - studied
+            - practiced
+            - completed
+      required:
+        - weeks
+        - days
+        - totals
+    ChangeLogEntry:
+      type: object
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+          enum:
+            - created
+            - renamed
+            - moved
+            - dateChanged
+            - stageReopened
+            - deleted
+            - updated
+        description:
+          type: string
+        roadmapId:
+          type: integer
+        moduleId:
+          anyOf:
+            - type: integer
+            - type: 'null'
+        topicId:
+          anyOf:
+            - type: integer
+            - type: 'null'
+        payload:
+          anyOf:
+            - type: object
+            - type: 'null'
+        occurredAt: *id013
+      required:
+        - id
+        - type
+        - description
+        - roadmapId
+        - moduleId
+        - topicId
+        - payload
+        - occurredAt
+    TimelineItem:
+      type: object
+      properties:
+        kind:
+          type: string
+          enum:
+            - session
+            - change
+        occurredAt: *id013
+        session:
+          anyOf:
+            - $ref: '#/components/schemas/SessionWithTopic'
+            - type: 'null'
+        change:
+          anyOf:
+            - $ref: '#/components/schemas/ChangeLogEntry'
+            - type: 'null'
+      required:
+        - kind
+        - occurredAt
+        - session
+        - change
+    TimelinePage:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/TimelineItem'
+        nextCursor:
+          anyOf:
+            - type: string
+            - type: 'null'
+      required:
+        - items
+        - nextCursor
+    ChangeLogPage:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChangeLogEntry'
+        nextCursor:
+          anyOf:
+            - type: string
+            - type: 'null'
+      required:
+        - items
+        - nextCursor
+    Note:
+      type: object
+      properties:
+        id:
+          type: integer
+        topicId:
+          anyOf:
+            - type: integer
+            - type: 'null'
+        moduleId:
+          anyOf:
+            - type: integer
+            - type: 'null'
+        content:
+          type: string
+          description: Markdown
+        createdAt: *id013
+        editedAt:
+          anyOf:
+            - *id013
+            - type: 'null'
+      required:
+        - id
+        - topicId
+        - moduleId
+        - content
+        - createdAt
+        - editedAt
+    NoteRequest:
+      type: object
+      properties:
+        content:
+          type: string
+          maxLength: 100000
+      required:
+        - content
+    Resource:
+      type: object
+      properties:
+        id:
+          type: integer
+        topicId:
+          type: integer
+        title:
+          type: string
+        url:
+          type: string
+          format: uri
+        kind:
+          type: string
+          enum:
+            - article
+            - video
+            - book
+            - course
+            - other
+        createdAt: *id013
+      required:
+        - id
+        - topicId
+        - title
+        - url
+        - kind
+        - createdAt
+    ResourceRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          maxLength: 200
+        url:
+          type: string
+          format: uri
+        kind:
+          type: string
+          enum:
+            - article
+            - video
+            - book
+            - course
+            - other
+      required:
+        - url
+    SearchResult:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - topic
+            - note
+            - file
+        id:
+          type: integer
+        title:
+          type: string
+        snippet:
+          type: string
+          description: Trecho com <mark> nos termos encontrados
+        topic:
+          $ref: '#/components/schemas/TopicRef'
+        stage:
+          $ref: '#/components/schemas/Stage'
+      required:
+        - type
+        - id
+        - title
+        - snippet
+        - topic
+        - stage
+    SearchResults:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchResult'
+        total:
+          type: integer
+        nextCursor:
+          anyOf:
+            - type: string
+            - type: 'null'
+      required:
+        - items
+        - total
+        - nextCursor
+    FileNode:
+      type: object
+      properties:
+        path:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+          enum:
+            - file
+            - folder
+        id:
+          anyOf:
+            - type: integer
+            - type: 'null'
+        mimeType:
+          anyOf:
+            - type: string
+            - type: 'null'
+        sizeBytes:
+          anyOf:
+            - type: integer
+            - type: 'null'
+        updatedAt:
+          anyOf:
+            - *id013
+            - type: 'null'
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/FileNode'
+      required:
+        - path
+        - name
+        - type
+    FileTree:
+      type: object
+      properties:
+        root:
+          $ref: '#/components/schemas/FileNode'
+        totalFiles:
+          type: integer
+      required:
+        - root
+        - totalFiles
+    CreateFolderRequest:
+      type: object
+      properties:
+        path:
+          type: string
+      required:
+        - path
+    MoveFileRequest:
+      type: object
+      properties:
+        from:
+          type: string
+        to:
+          type: string
+      required:
+        - from
+        - to
+    Integration:
+      type: object
+      properties:
+        provider:
+          type: string
+          enum:
+            - googleDrive
+            - googleCalendar
+        available: *id004
+        connected: *id004
+        accountEmail:
+          anyOf:
+            - type: string
+            - type: 'null'
+        rootFolderName:
+          anyOf:
+            - type: string
+            - type: 'null'
+        connectedAt:
+          anyOf:
+            - *id013
+            - type: 'null'
+      required:
+        - provider
+        - available
+        - connected
+        - accountEmail
+        - rootFolderName
+        - connectedAt
+    UpdateDriveRequest:
+      type: object
+      properties:
+        rootFolderName:
+          type: string
+          maxLength: 200
+      required:
+        - rootFolderName
+    PushPublicKey:
+      type: object
+      properties:
+        publicKey:
+          type: string
+      required:
+        - publicKey
+    PushSubscriptionRequest:
+      type: object
+      properties:
+        endpoint:
+          type: string
+          format: uri
+        keys:
+          type: object
+          properties:
+            p256dh:
+              type: string
+            auth:
+              type: string
+          required:
+            - p256dh
+            - auth
+        userAgent:
+          type: string
+      required:
+        - endpoint
+        - keys
+    PushSubscription:
+      type: object
+      properties:
+        id:
+          type: integer
+        endpoint:
+          type: string
+        createdAt: *id013
+      required:
+        - id
+        - endpoint
+        - createdAt
