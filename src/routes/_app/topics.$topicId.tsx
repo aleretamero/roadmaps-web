@@ -7,6 +7,7 @@ import {
   ReopenStageDialog,
 } from '@/features/topic/TopicDialogs'
 import { TopicPage } from '@/features/topic/TopicPage'
+import { FilesTab } from '@/features/topic/FilesTab'
 import { ResourcesPanel } from '@/features/topic/ResourcesPanel'
 import { TopicTimeline } from '@/features/topic/TopicTimeline'
 import { LogSessionDialog } from '@/components/LogSession'
@@ -92,7 +93,11 @@ function Topic() {
         }}
         panels={{
           timeline: <TopicTimeline topic={data} />,
-          files: placeholder('Os arquivos do tópico estão sendo construídos.'),
+          files: (
+            <FilesTab topicId={id}>
+              {placeholder('Os arquivos do tópico estão sendo construídos.')}
+            </FilesTab>
+          ),
           resources: <ResourcesPanel topicId={id} />,
           notes: <NotesPanel owner={{ kind: 'topic', id }} />,
         }}
