@@ -6,6 +6,8 @@ async function enableMocking() {
   if (import.meta.env.VITE_API_MOCK !== 'true') return
   const { startMockWorker } = await import('./mocks/browser')
   await startMockWorker()
+  // Sinal para os testes E2E saberem que o mock já intercepta as requisições.
+  ;(window as Window & { __MOCK_READY__?: boolean }).__MOCK_READY__ = true
 }
 
 // O mock precisa estar de pé antes da hidratação, senão as primeiras consultas vão para a rede.

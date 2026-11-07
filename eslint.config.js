@@ -18,6 +18,8 @@ export default [
       'storybook-static',
       'docs/prototype',
       'public/mockServiceWorker.js',
+      'test-results',
+      'playwright-report',
       '!.storybook',
     ],
   },
@@ -39,5 +41,10 @@ export default [
     // Código copiado do shadcn/ui: mantido como vem do registro.
     files: ['src/components/ui/**'],
     rules: { 'no-shadow': 'off' },
+  },
+  {
+    // Fixtures do Playwright usam `use()`, que não é hook do React.
+    files: ['e2e/**'],
+    rules: { 'react-hooks/rules-of-hooks': 'off' },
   },
 ]

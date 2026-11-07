@@ -1,0 +1,43 @@
+import { LandingPage } from './pages/LandingPage'
+import { expect, test } from './fixtures'
+
+test.describe('fumaça', () => {
+  test('a página inicial abre sem erros e é acessível', async ({
+    page,
+    open,
+    expectAccessible,
+  }) => {
+    await open('/')
+    await expect(new LandingPage(page).heading()).toHaveText('Roadmaps')
+    await expectAccessible()
+  })
+
+  test('a API mockada responde dentro do app', async ({ page, open }) => {
+    await open('/')
+    const status = await page.evaluate(async () => {
+      const res = await fetch('/api/v1/me')
+      return [
+        res.status,
+        ((await res.json()) as { name: string }).name,
+      ] as const
+    })
+    expect(status).toEqual([200, 'Marina Costa'])
+  })
+
+  test.describe('deslogado', () => {
+    test.use({ scenario: 'deslogado' })
+    test('o cenário deslogado responde 401', async ({ page, open }) => {
+      await open('/')
+      const status = await page.evaluate(
+        async () => (await fetch('/api/v1/me')).status,
+      )
+      expect(status).toBe(401)
+    })
+  })
+
+  test('o relógio dos testes é fixo', async ({ page, open }) => {
+    await open('/')
+    const today = await page.evaluate(() => new Date().toISOString())
+    expect(today).toBe('2026-11-07T13:00:00.000Z')
+  })
+})
