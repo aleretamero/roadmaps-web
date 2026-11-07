@@ -1,12 +1,14 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { toast } from 'sonner'
+import { RoadmapList } from '@/features/roadmap/RoadmapList'
 import { RoadmapPage } from '@/features/roadmap/RoadmapPage'
 import { errorMessage } from '@/lib/api/errors'
 import {
   roadmapQuery,
   useArchiveRoadmap,
   useChoosePath,
+  useRoadmapReorder,
 } from '@/lib/api/queries'
 
 type RoadmapSearch = { view?: 'list'; tab?: 'progress' }
@@ -40,6 +42,7 @@ function Roadmap() {
   const { data } = useSuspenseQuery(roadmapQuery(id))
   const archive = useArchiveRoadmap()
   const choose = useChoosePath(id)
+  const reorder = useRoadmapReorder(id)
   return (
     <RoadmapPage
       roadmap={data}
@@ -69,9 +72,15 @@ function Roadmap() {
         )
       }
       list={
-        <p className="rounded-[14px] border border-dashed border-line-control bg-surface p-8 text-center text-ink-muted">
-          A visão em lista está sendo construída.
-        </p>
+        <RoadmapList
+          roadmap={data}
+          onReorder={(change) =>
+            reorder.mutate(change, {
+              onError: (e) =>
+                toast.error(`Não foi possível mover: ${errorMessage(e)}`),
+            })
+          }
+        />
       }
       progress={
         <p className="rounded-[14px] border border-dashed border-line-control bg-surface p-8 text-center text-ink-muted">

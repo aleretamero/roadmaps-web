@@ -6,6 +6,7 @@ import {
   splitRoadmap,
 } from '@/mocks/mapExamples'
 import { withRouter } from '@/test/StoryRouter'
+import { RoadmapList } from './RoadmapList'
 import { RoadmapMap } from './RoadmapMap'
 import { RoadmapPage } from './RoadmapPage'
 
@@ -118,4 +119,32 @@ export const PaginaSemModulos: StoryObj<typeof RoadmapPage> = {
       onChoose={fn()}
     />
   ),
+}
+
+export const Lista: StoryObj<typeof RoadmapList> = {
+  parameters: { layout: 'padded' },
+  render: () => <RoadmapList roadmap={linearRoadmap()} onReorder={fn()} />,
+}
+
+export const ListaAtalhos: StoryObj<typeof RoadmapList> = {
+  parameters: { layout: 'padded' },
+  args: { onReorder: fn() },
+  render: (args) => (
+    <RoadmapList roadmap={linearRoadmap()} onReorder={args.onReorder} />
+  ),
+  play: async ({ canvasElement, args }) => {
+    const c = within(canvasElement)
+    c.getByRole('link', { name: 'Tempos' }).focus()
+    await userEvent.keyboard('{Alt>}{ArrowDown}{/Alt}')
+    await expect(args.onReorder).toHaveBeenCalledWith(
+      expect.objectContaining({
+        call: expect.objectContaining({ kind: 'move', position: 0 }),
+      }),
+    )
+  },
+}
+
+export const ListaComDivisao: StoryObj<typeof RoadmapList> = {
+  parameters: { layout: 'padded' },
+  render: () => <RoadmapList roadmap={splitRoadmap()} onReorder={fn()} />,
 }
