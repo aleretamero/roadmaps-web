@@ -1,4 +1,5 @@
 import {
+  infiniteQueryOptions,
   queryOptions,
   useMutation,
   useQueryClient,
@@ -75,32 +76,46 @@ export const topicQuery = (topicId: number) =>
     queryFn: () => unwrap(api.GET('/topics/{id}', id(topicId))),
   })
 
+const TIMELINE_PAGE = 20
+
+/** Linha do tempo do tópico, paginada pelo `nextCursor`. */
 export const topicTimelineQuery = (
   topicId: number,
   type: 'sessions' | 'changes',
 ) =>
-  queryOptions({
+  infiniteQueryOptions({
     queryKey: keys.topics.timeline(topicId, type),
-    queryFn: () =>
+    queryFn: ({ pageParam }) =>
       unwrap(
         api.GET('/topics/{id}/timeline', {
-          params: { path: { id: topicId }, query: { type } },
+          params: {
+            path: { id: topicId },
+            query: { type, limit: TIMELINE_PAGE, cursor: pageParam },
+          },
         }),
       ),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (last) => last.nextCursor ?? undefined,
   })
 
+/** Linha do tempo do módulo, paginada pelo `nextCursor`. */
 export const moduleTimelineQuery = (
   moduleId: number,
   type: 'progress' | 'changes',
 ) =>
-  queryOptions({
+  infiniteQueryOptions({
     queryKey: keys.modules.timeline(moduleId, type),
-    queryFn: () =>
+    queryFn: ({ pageParam }) =>
       unwrap(
         api.GET('/modules/{id}/timeline', {
-          params: { path: { id: moduleId }, query: { type } },
+          params: {
+            path: { id: moduleId },
+            query: { type, limit: TIMELINE_PAGE, cursor: pageParam },
+          },
         }),
       ),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (last) => last.nextCursor ?? undefined,
   })
 
 export const topicNotesQuery = (topicId: number) =>
@@ -464,6 +479,29 @@ export function useApplySchedule(roadmapId: number) {
     mutationFn: (body: Schemas['SchedulePreviewRequest']) =>
       unwrap(api.POST('/roadmaps/{id}/schedule', { ...id(roadmapId), body })),
     onSuccess: () => invalidateStudy(qc),
+  })
+}
+
+export function useUpdateSession(topicId: number) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({
+      sessionId,
+      body,
+    }: {
+      sessionId: number
+      body: Schemas['UpdateSessionRequest']
+    }) => unwrap(api.PATCH('/sessions/{id}', { ...id(sessionId), body })),
+    onSuccess: () => invalidateStudy(qc, topicId),
+  })
+}
+
+export function useDeleteSession(topicId: number) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (sessionId: number) =>
+      unwrap(api.DELETE('/sessions/{id}', id(sessionId))),
+    onSuccess: () => invalidateStudy(qc, topicId),
   })
 }
 

@@ -7,6 +7,7 @@ import {
   ReopenStageDialog,
 } from '@/features/topic/TopicDialogs'
 import { TopicPage } from '@/features/topic/TopicPage'
+import { TopicTimeline } from '@/features/topic/TopicTimeline'
 import { LogSessionDialog } from '@/components/LogSession'
 import type { TopicTab } from '@/features/topic/TopicPage'
 import { errorMessage } from '@/lib/api/errors'
@@ -88,9 +89,7 @@ function Topic() {
           })
         }}
         panels={{
-          timeline: placeholder(
-            'A linha do tempo do tópico está sendo construída.',
-          ),
+          timeline: <TopicTimeline topic={data} />,
           files: placeholder('Os arquivos do tópico estão sendo construídos.'),
           resources: placeholder(
             'As referências do tópico estão sendo construídas.',
