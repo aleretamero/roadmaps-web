@@ -18,6 +18,7 @@ import { Route as DevComponentsRouteImport } from './routes/dev.components'
 import { Route as DevTokensRouteImport } from './routes/dev.tokens'
 import { Route as AppRoadmapsIndexRouteImport } from './routes/_app/roadmaps.index'
 import { Route as AppRoadmapsRoadmapIdRouteImport } from './routes/_app/roadmaps.$roadmapId'
+import { Route as AppRoadmapsNewRouteImport } from './routes/_app/roadmaps.new'
 import { Route as AppSettingsSectionRouteImport } from './routes/_app/settings.$section'
 import { Route as AppTopicsTopicIdRouteImport } from './routes/_app/topics.$topicId'
 
@@ -65,6 +66,11 @@ const AppRoadmapsRoadmapIdRoute = AppRoadmapsRoadmapIdRouteImport.update({
   path: '/roadmaps/$roadmapId',
   getParentRoute: () => AppRoute,
 } as any)
+const AppRoadmapsNewRoute = AppRoadmapsNewRouteImport.update({
+  id: '/roadmaps/new',
+  path: '/roadmaps/new',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppSettingsSectionRoute = AppSettingsSectionRouteImport.update({
   id: '/settings/$section',
   path: '/settings/$section',
@@ -84,6 +90,7 @@ export interface FileRoutesByFullPath {
   '/dev/components': typeof DevComponentsRoute
   '/dev/tokens': typeof DevTokensRoute
   '/roadmaps/$roadmapId': typeof AppRoadmapsRoadmapIdRoute
+  '/roadmaps/new': typeof AppRoadmapsNewRoute
   '/settings/$section': typeof AppSettingsSectionRoute
   '/topics/$topicId': typeof AppTopicsTopicIdRoute
   '/roadmaps/': typeof AppRoadmapsIndexRoute
@@ -96,6 +103,7 @@ export interface FileRoutesByTo {
   '/dev/components': typeof DevComponentsRoute
   '/dev/tokens': typeof DevTokensRoute
   '/roadmaps/$roadmapId': typeof AppRoadmapsRoadmapIdRoute
+  '/roadmaps/new': typeof AppRoadmapsNewRoute
   '/settings/$section': typeof AppSettingsSectionRoute
   '/topics/$topicId': typeof AppTopicsTopicIdRoute
   '/roadmaps': typeof AppRoadmapsIndexRoute
@@ -110,6 +118,7 @@ export interface FileRoutesById {
   '/dev/components': typeof DevComponentsRoute
   '/dev/tokens': typeof DevTokensRoute
   '/_app/roadmaps/$roadmapId': typeof AppRoadmapsRoadmapIdRoute
+  '/_app/roadmaps/new': typeof AppRoadmapsNewRoute
   '/_app/settings/$section': typeof AppSettingsSectionRoute
   '/_app/topics/$topicId': typeof AppTopicsTopicIdRoute
   '/_app/roadmaps/': typeof AppRoadmapsIndexRoute
@@ -124,6 +133,7 @@ export interface FileRouteTypes {
     | '/dev/components'
     | '/dev/tokens'
     | '/roadmaps/$roadmapId'
+    | '/roadmaps/new'
     | '/settings/$section'
     | '/topics/$topicId'
     | '/roadmaps/'
@@ -136,6 +146,7 @@ export interface FileRouteTypes {
     | '/dev/components'
     | '/dev/tokens'
     | '/roadmaps/$roadmapId'
+    | '/roadmaps/new'
     | '/settings/$section'
     | '/topics/$topicId'
     | '/roadmaps'
@@ -149,6 +160,7 @@ export interface FileRouteTypes {
     | '/dev/components'
     | '/dev/tokens'
     | '/_app/roadmaps/$roadmapId'
+    | '/_app/roadmaps/new'
     | '/_app/settings/$section'
     | '/_app/topics/$topicId'
     | '/_app/roadmaps/'
@@ -227,6 +239,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRoadmapsRoadmapIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/roadmaps/new': {
+      id: '/_app/roadmaps/new'
+      path: '/roadmaps/new'
+      fullPath: '/roadmaps/new'
+      preLoaderRoute: typeof AppRoadmapsNewRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/settings/$section': {
       id: '/_app/settings/$section'
       path: '/settings/$section'
@@ -248,6 +267,7 @@ interface AppRouteChildren {
   AppDashboardRoute: typeof AppDashboardRoute
   AppScheduleRoute: typeof AppScheduleRoute
   AppRoadmapsRoadmapIdRoute: typeof AppRoadmapsRoadmapIdRoute
+  AppRoadmapsNewRoute: typeof AppRoadmapsNewRoute
   AppSettingsSectionRoute: typeof AppSettingsSectionRoute
   AppTopicsTopicIdRoute: typeof AppTopicsTopicIdRoute
   AppRoadmapsIndexRoute: typeof AppRoadmapsIndexRoute
@@ -257,6 +277,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppDashboardRoute: AppDashboardRoute,
   AppScheduleRoute: AppScheduleRoute,
   AppRoadmapsRoadmapIdRoute: AppRoadmapsRoadmapIdRoute,
+  AppRoadmapsNewRoute: AppRoadmapsNewRoute,
   AppSettingsSectionRoute: AppSettingsSectionRoute,
   AppTopicsTopicIdRoute: AppTopicsTopicIdRoute,
   AppRoadmapsIndexRoute: AppRoadmapsIndexRoute,

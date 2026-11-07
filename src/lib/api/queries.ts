@@ -197,7 +197,22 @@ export function useArchiveRoadmap() {
           ? api.POST('/roadmaps/{id}/archive', id(roadmapId))
           : api.POST('/roadmaps/{id}/unarchive', id(roadmapId)),
       ),
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.roadmaps.all }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: keys.roadmaps.all })
+      void qc.invalidateQueries({ queryKey: keys.dashboard.all })
+    },
+  })
+}
+
+export function useDeleteRoadmap() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (roadmapId: number) =>
+      unwrap(api.DELETE('/roadmaps/{id}', id(roadmapId))),
+    onSuccess: (_data, roadmapId) => {
+      qc.removeQueries({ queryKey: keys.roadmaps.detail(roadmapId) })
+      invalidateStudy(qc)
+    },
   })
 }
 
