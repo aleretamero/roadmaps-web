@@ -135,6 +135,19 @@ export const scheduleQuery = (from: string, to: string) =>
       unwrap(api.GET('/schedule', { params: { query: { from, to } } })),
   })
 
+export const schedulePreviewQuery = (
+  roadmapId: number,
+  body: Schemas['SchedulePreviewRequest'],
+) =>
+  queryOptions({
+    queryKey: [...keys.schedule.all, 'preview', roadmapId, body] as const,
+    queryFn: () =>
+      unwrap(
+        api.POST('/roadmaps/{id}/schedule/preview', { ...id(roadmapId), body }),
+      ),
+    staleTime: 0,
+  })
+
 export const searchQuery = (q: string, type?: 'topics' | 'notes' | 'files') =>
   queryOptions({
     queryKey: keys.search(q, type),
@@ -442,6 +455,15 @@ export function useAddScheduleEntry(topicId: number) {
         }),
       ),
     onSuccess: () => invalidateStudy(qc, topicId),
+  })
+}
+
+export function useApplySchedule(roadmapId: number) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (body: Schemas['SchedulePreviewRequest']) =>
+      unwrap(api.POST('/roadmaps/{id}/schedule', { ...id(roadmapId), body })),
+    onSuccess: () => invalidateStudy(qc),
   })
 }
 

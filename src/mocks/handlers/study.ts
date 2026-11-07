@@ -203,12 +203,18 @@ export const studyHandlers = [
       const db = getDb()
       const id = num(params.id)
       if (!findRoadmap(id)) return notFound()
-      const preview = schedulePreview(db, id, await request.json())
+      const body = await request.json()
+      const preview = schedulePreview(db, id, body)
       const ids = new Set(preview.items.map((i) => i.topicId))
-      // Substitui os agendamentos automáticos futuros dos mesmos tópicos.
+      // Substitui os agendamentos futuros dos mesmos tópicos: só os automáticos,
+      // ou todos com `replaceExisting`.
       db.schedule = db.schedule.filter(
         (e) =>
-          !(ids.has(e.topicId) && e.source === 'auto' && e.date >= today()),
+          !(
+            ids.has(e.topicId) &&
+            (body.replaceExisting || e.source === 'auto') &&
+            e.date >= today()
+          ),
       )
       for (const item of preview.items)
         if (

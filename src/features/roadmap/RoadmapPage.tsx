@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import { List, Network, Plus } from 'lucide-react'
+import { CalendarClock, List, Network, Plus } from 'lucide-react'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 import type { Schemas } from '@/lib/api/client'
 import { cn } from '@/lib/utils'
@@ -22,6 +22,8 @@ export type RoadmapPageProps = {
   progress?: React.ReactNode
   /** Quantos módulos em andamento (número da aba Progresso). */
   activeModules?: number
+  /** Abre o modal Agendar automaticamente. */
+  onAutoSchedule?: () => void
 }
 
 const tabClass = (on: boolean) =>
@@ -50,6 +52,7 @@ export function RoadmapPage({
   list,
   progress,
   activeModules,
+  onAutoSchedule,
 }: RoadmapPageProps) {
   const archived = !!r.archivedAt
   const id = String(r.id)
@@ -123,6 +126,16 @@ export function RoadmapPage({
             <Plus className="size-4" aria-hidden="true" />
             Adicionar módulos e tópicos
           </Link>
+          {!archived && onAutoSchedule && (
+            <button
+              type="button"
+              onClick={onAutoSchedule}
+              className="inline-flex h-11 items-center gap-2 rounded-[10px] border border-line-strong bg-surface px-4 font-medium hover:bg-canvas"
+            >
+              <CalendarClock className="size-4" aria-hidden="true" />
+              Agendar automaticamente
+            </button>
+          )}
         </div>
         {!r.startedOn && r.modules.length > 0 && (
           <p className="mt-2 max-w-[640px] rounded-xl border-[1.5px] border-dashed border-ink-faint bg-surface px-5 py-4 text-ink-muted">

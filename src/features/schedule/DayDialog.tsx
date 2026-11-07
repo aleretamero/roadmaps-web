@@ -108,7 +108,7 @@ function DayBody({
 
   return (
     <>
-      <DialogHeader className="gap-1 px-5 pt-6 pr-12 pb-4 sm:px-7">
+      <DialogHeader className="gap-1 px-5 pt-6 pr-12 pb-4 text-left sm:px-7">
         <DialogTitle className="text-[22px] font-semibold">
           {formatLong(date)}
         </DialogTitle>

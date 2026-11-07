@@ -2722,6 +2722,14 @@ components:
           type: array
           items:
             type: integer
+        studyDays:
+          type: array
+          description: 'Dias da semana usados neste agendamento (padrão: os dias de estudo das preferências).'
+          items:
+            $ref: '#/components/schemas/Weekday'
+        replaceExisting:
+          type: boolean
+          description: 'Ao gravar, tira as datas futuras que os tópicos já tinham (manuais ou automáticas). Padrão false: só as automáticas são trocadas.'
       required:
         - startDate
     SchedulePreview:
