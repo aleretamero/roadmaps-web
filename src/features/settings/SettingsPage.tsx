@@ -324,6 +324,8 @@ export type StudySectionProps = {
   error?: string | null
   onSave: (prefs: Schemas['Preferences']) => void
   onDirtyChange?: (dirty: boolean) => void
+  /** Linha do lembrete diário (salva sozinha, fora do formulário). */
+  reminder?: React.ReactNode
 }
 
 const studySchema = z.object({
@@ -354,6 +356,7 @@ export function StudySection({
   error,
   onSave,
   onDirtyChange,
+  reminder,
 }: StudySectionProps) {
   const [defaults] = useState({
     studyDays: prefs.studyDays,
@@ -492,6 +495,7 @@ export function StudySection({
           onReset={() => form.reset()}
         />
       </form>
+      {reminder}
     </Card>
   )
 }

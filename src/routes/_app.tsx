@@ -11,6 +11,7 @@ import { AppHeader } from '@/features/app-shell/AppHeader'
 import { SearchDialog } from '@/features/search/SearchDialog'
 import { LogSessionProvider } from '@/components/LogSession'
 import { RescheduleProvider } from '@/components/Reschedule'
+import { MockNotifications } from '@/components/MockNotifications'
 import { PagePending, RouteError } from '@/components/RouteStates'
 import { isApiError } from '@/lib/api/errors'
 import { meQuery, useLogout } from '@/lib/api/queries'
@@ -62,6 +63,7 @@ function Shell({ children }: { children: React.ReactNode }) {
         Pular para o conteúdo
       </a>
       <Header />
+      <MockNotifications />
       <main id="conteudo" tabIndex={-1} className="outline-none">
         {children}
       </main>

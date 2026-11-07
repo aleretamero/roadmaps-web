@@ -9,6 +9,7 @@ export default [
   {
     ignores: [
       'dist',
+      'public/**',
       '.output',
       '.tanstack',
       'coverage',
