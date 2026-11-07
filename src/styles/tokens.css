@@ -1,0 +1,74 @@
+/*
+ * Tokens de design do Roadmaps, extraídos do protótipo.
+ * Este é o ÚNICO arquivo do código com cores em hexadecimal.
+ * Nas telas use as classes do Tailwind geradas daqui (ex.: bg-canvas, text-ink-muted, bg-stage-studying).
+ */
+@theme static {
+  /* Tipografia */
+  --font-sans: 'Geist Variable', system-ui, sans-serif;
+  --font-mono: 'Geist Mono Variable', ui-monospace, monospace;
+  --font-serif: Georgia, serif;
+
+  /* Tinta (textos) */
+  --color-ink: #15171a;
+  --color-ink-strong: #2b2f35;
+  --color-ink-muted: #4a5059;
+  --color-ink-soft: #5b616b;
+  --color-ink-subtle: #6b7178;
+  --color-ink-faint: #9aa096;
+
+  /* Superfícies */
+  --color-canvas: #f5f6f4;
+  --color-surface: #ffffff;
+  --color-surface-raised: #fafbf9;
+  --color-surface-sunken: #eef0ec;
+
+  /* Linhas e bordas */
+  --color-line: #e2e4e0;
+  --color-line-soft: #f0f1ee;
+  --color-line-strong: #d5d8d2;
+  --color-line-control: #c9cdc6;
+
+  /* Ações e estados */
+  --color-link: #1f4fbf;
+  --color-danger: #a1281e;
+  --color-danger-soft: #fbe9e7;
+  --color-success: #1e6b3a;
+  --color-warning: #8a4b00;
+
+  /* Etapas do tópico: fundo do chip e texto */
+  --color-stage-planned: #eef0ec;
+  --color-stage-planned-fg: #4a5059;
+  --color-stage-studying: #e6edfb;
+  --color-stage-studying-fg: #1f4fbf;
+  --color-stage-practicing: #fcefd9;
+  --color-stage-practicing-fg: #8a4b00;
+  --color-stage-completed: #e3f1e6;
+  --color-stage-completed-fg: #1e6b3a;
+
+  /* Gráficos: uma cor por etapa (barras, legendas) */
+  --color-chart-completed: #2e7d4f;
+  --color-chart-practicing: #c27512;
+  --color-chart-studying: #3d6fd9;
+  --color-chart-planned: #c9cdc6;
+
+  /* Mapa de calor: 0 (nenhuma sessão) a 4 (muitas) */
+  --color-heat-0: #eef0ec;
+  --color-heat-1: #c6e0cd;
+  --color-heat-2: #86bf97;
+  --color-heat-3: #3f8f58;
+  --color-heat-4: #1e5a37;
+
+  /* Raios */
+  --radius-xs: 3px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+
+  /* Sombras */
+  --shadow-menu: 0 12px 32px rgb(21 23 26 / 0.16);
+  --shadow-dialog: 0 24px 64px rgb(21 23 26 / 0.28);
+  --shadow-ring-inset: inset 0 0 0 1px var(--color-surface-sunken);
+}
