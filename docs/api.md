@@ -35,3 +35,31 @@ Em desenvolvimento (`.env.development` tem `VITE_API_MOCK=true`), no Storybook e
 - **Listas grandes**: `addRandomRoadmaps(db, n)` em `src/mocks/factories.ts` (faker com semente fixa).
 - **Rota nova no contrato** = handler novo: o teste `src/mocks/mocks.test.ts` falha se alguma rota do `openapi.yaml` não tiver handler.
 - **Importação JSON**: o front aceita chaves em português (`nome`, `modulos`, `titulo`, `topicos`, `opcional`, `dataPrevista`, `depoisDe`, `alternativaA`) ou as do contrato, e converte para o contrato (`ImportModule`) antes de chamar a API. A validação final é sempre o `?dryRun=true`.
+
+## API real
+
+O mock continua sendo o padrão (`.env` tem `VITE_API_MOCK=true`), e o Storybook e os testes de componente sempre usam o MSW. Para usar o backend de verdade:
+
+1. Suba o [roadmaps-api](https://github.com/aleretamero/roadmaps-api): `cp .env.example .env && docker compose --profile full up -d`. A API fica em `http://localhost:8080`.
+2. Rode o front com `pnpm dev:api`. Ele usa `VITE_API_MOCK=false`, e o dev server repassa `/api` para `API_PROXY_TARGET` (padrão `http://localhost:8080`).
+   - App e API ficam na **mesma origem**, então o cookie de sessão funciona sem CORS.
+   - O proxy reescreve o domínio do cookie e os redirecionamentos do OAuth.
+
+### Contrato publicado pelo backend
+
+`pnpm api:diff --from http://localhost:8080/openapi/v1.json` compara `contracts/openapi.yaml` com o OpenAPI que o backend publica (em Development, pelo `MapOpenApi`). Ele lista:
+
+- operações que só existem de um lado;
+- schemas com propriedades diferentes (o `!` marca as obrigatórias).
+
+Use `--write contracts/openapi.published.json` para guardar uma cópia e `--strict` para falhar quando houver diferença.
+
+**Quando houver diferença**: abra uma issue no repositório que precisa mudar e cite-a na outra. Enquanto o backend não implementa tudo, a fonte da verdade do front continua sendo `contracts/openapi.yaml`.
+
+### E2E contra a API real
+
+`pnpm e2e:api` (`playwright.api.config.ts`, pasta `e2e-api/`) roda o fluxo completo: entrar, criar roadmap, registrar sessão e ver no painel.
+
+- **Login**: o OAuth do GitHub não dá para automatizar, então o teste usa uma rota de login de desenvolvimento do backend (`E2E_LOGIN_PATH`, padrão `/api/v1/auth/dev-login?redirect=…`). Ela deve existir **só em Development**.
+- **No CI**: o job "E2E contra a API real" sobe o backend com Docker Compose e roda esse fluxo. É opcional e não bloqueia o merge: roda pelo "Run workflow" (`workflow_dispatch`) ou com a variável de repositório `API_E2E=true`. As diferenças de contrato vão para o resumo do job.
+- **Conferir o roteiro contra o mock**: `E2E_BASE_URL=http://localhost:3000 E2E_LOGIN_PATH=none pnpm e2e:api`, com `pnpm dev` de pé.
