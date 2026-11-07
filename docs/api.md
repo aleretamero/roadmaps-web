@@ -34,3 +34,4 @@ Em desenvolvimento (`.env.development` tem `VITE_API_MOCK=true`), no Storybook e
 - **Persistência**: `?mock-persist=1` guarda o banco no `localStorage` (para testar recarregando); `?mock-persist=0` desliga.
 - **Listas grandes**: `addRandomRoadmaps(db, n)` em `src/mocks/factories.ts` (faker com semente fixa).
 - **Rota nova no contrato** = handler novo: o teste `src/mocks/mocks.test.ts` falha se alguma rota do `openapi.yaml` não tiver handler.
+- **Importação JSON**: o front aceita chaves em português (`nome`, `modulos`, `titulo`, `topicos`, `opcional`, `dataPrevista`, `depoisDe`, `alternativaA`) ou as do contrato, e converte para o contrato (`ImportModule`) antes de chamar a API. A validação final é sempre o `?dryRun=true`.
