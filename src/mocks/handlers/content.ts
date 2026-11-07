@@ -263,9 +263,15 @@ export const contentHandlers = [
       return problem(400, 'validation_error', 'Caminho inválido', {
         path: ['Caminho inválido'],
       })
-    const content =
-      file.type.startsWith('text/') ||
-      /\.(md|txt|sql|cs|ts|js|json)$/i.test(file.name)
+    // Texto fica como texto; imagem fica em base64 (para a pré-visualização).
+    const content = file.type.startsWith('image/')
+      ? btoa(
+          Array.from(new Uint8Array(await file.arrayBuffer()), (b) =>
+            String.fromCharCode(b),
+          ).join(''),
+        )
+      : file.type.startsWith('text/') ||
+          /\.(md|txt|sql|cs|ts|js|json|ya?ml|sh|py)$/i.test(file.name)
         ? await file.text()
         : ''
     db.files = db.files.filter(
@@ -361,7 +367,10 @@ export const contentHandlers = [
     if (!driveConnected()) return driveMissing()
     const f = getDb().files.find((x) => x.id === num(params.id))
     if (!f) return notFound()
-    return new HttpResponse(f.content, {
+    const body = f.mimeType.startsWith('image/')
+      ? Uint8Array.from(atob(f.content), (c) => c.charCodeAt(0))
+      : f.content
+    return new HttpResponse(body, {
       headers: { 'Content-Type': f.mimeType },
     }) as never
   }),
