@@ -10,3 +10,6 @@ dist-ssr
 .vinxi
 coverage
 __unconfig*
+
+*storybook.log
+storybook-static

@@ -28,7 +28,11 @@ export function InfoTooltip({ label, children, className }: InfoTooltipProps) {
       >
         i
       </PopoverTrigger>
-      <PopoverContent className="w-72 text-sm leading-relaxed" align="end">
+      <PopoverContent
+        aria-label={label}
+        className="w-72 text-sm leading-relaxed"
+        align="end"
+      >
         {children}
       </PopoverContent>
     </Popover>
