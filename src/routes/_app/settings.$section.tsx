@@ -26,9 +26,11 @@ import {
   SettingsLayout,
   StudySection,
 } from '@/features/settings/SettingsPage'
+import { ReminderRow } from '@/features/settings/ReminderRow'
 import type { SettingsSection } from '@/features/settings/SettingsPage'
 import { errorMessage } from '@/lib/api/errors'
 import {
+  dashboardQuery,
   integrationsQuery,
   meQuery,
   preferencesQuery,
@@ -38,6 +40,13 @@ import {
   useUpdatePreferences,
 } from '@/lib/api/queries'
 import { startDriveConnect } from '@/lib/integrations'
+import {
+  disablePush,
+  enablePush,
+  notificationPermission,
+  reminderText,
+  sendTestNotification,
+} from '@/lib/push'
 import { safeRedirect } from '@/lib/redirect'
 
 type SettingsSearch = { returnTo?: string }
@@ -133,7 +142,9 @@ function Account({ onDirtyChange }: { onDirtyChange: (d: boolean) => void }) {
 
 function Study({ onDirtyChange }: { onDirtyChange: (d: boolean) => void }) {
   const q = useQuery(preferencesQuery())
+  const dashboard = useQuery(dashboardQuery())
   const update = useUpdatePreferences()
+  const [pushBusy, setPushBusy] = useState(false)
   if (q.isPending) return <PagePending />
   if (q.error)
     return (
@@ -144,20 +155,72 @@ function Study({ onDirtyChange }: { onDirtyChange: (d: boolean) => void }) {
       />
     )
   const p = q.data
+  const today = dashboard.data?.today[0]?.topic ?? null
   return (
     <StudySection
-      key={JSON.stringify(p)}
+      key={JSON.stringify([p.studyDays, p.includeOptional, p.homePage])}
       prefs={p}
       saving={update.isPending}
       error={update.error ? errorMessage(update.error) : null}
       onDirtyChange={onDirtyChange}
       onSave={(prefs) =>
-        update.mutate(prefs, {
-          onSuccess: () => {
-            onDirtyChange(false)
-            toast.success('Preferências salvas')
+        update.mutate(
+          {
+            ...prefs,
+            reminderEnabled: p.reminderEnabled,
+            reminderTime: p.reminderTime,
           },
-        })
+          {
+            onSuccess: () => {
+              onDirtyChange(false)
+              toast.success('Preferências salvas')
+            },
+          },
+        )
+      }
+      reminder={
+        <ReminderRow
+          enabled={p.reminderEnabled}
+          time={p.reminderTime}
+          topicTitle={today?.title ?? null}
+          permission={notificationPermission()}
+          busy={pushBusy}
+          onEnable={async () => {
+            setPushBusy(true)
+            try {
+              const r = await enablePush()
+              if (r === 'enabled')
+                await update.mutateAsync({ ...p, reminderEnabled: true })
+              return r
+            } finally {
+              setPushBusy(false)
+            }
+          }}
+          onDisable={async () => {
+            setPushBusy(true)
+            try {
+              await disablePush()
+              await update.mutateAsync({ ...p, reminderEnabled: false })
+            } finally {
+              setPushBusy(false)
+            }
+          }}
+          onTimeChange={(reminderTime) =>
+            update.mutate(
+              { ...p, reminderTime },
+              {
+                onSuccess: () => toast.success('Horário do lembrete salvo'),
+                onError: (e) => toast.error(errorMessage(e)),
+              },
+            )
+          }
+          onTest={() =>
+            sendTestNotification({
+              ...reminderText(today?.title ?? null),
+              topicId: today?.id ?? null,
+            })
+          }
+        />
       }
     />
   )
