@@ -1036,6 +1036,14 @@ export interface components {
             createdAt: string;
             /** Format: date-time */
             updatedAt: string;
+            /** @description Dia da última sessão registrada. */
+            lastSessionOn: string | null;
+            /** @description Quando o tópico chegou em cada etapa (null se ainda não chegou). */
+            stageDates: {
+                studying: string | null;
+                practicing: string | null;
+                completed: string | null;
+            };
         };
         ModuleNode: {
             id: number;

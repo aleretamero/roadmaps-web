@@ -232,7 +232,10 @@ export function useUpdateTopic(topicId: number) {
   return useMutation({
     mutationFn: (body: Schemas['UpdateTopicRequest']) =>
       unwrap(api.PATCH('/topics/{id}', { ...id(topicId), body })),
-    onSuccess: () => invalidateStudy(qc, topicId),
+    onSuccess: (data) => {
+      qc.setQueryData(keys.topics.detail(topicId), data)
+      invalidateStudy(qc, topicId)
+    },
   })
 }
 
@@ -375,5 +378,42 @@ export function useUpdateModule(moduleId: number) {
       qc.setQueryData(keys.modules.detail(moduleId), data)
       invalidateStudy(qc)
     },
+  })
+}
+
+export function useReopenTopic(topicId: number) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (stage: Schemas['Stage']) =>
+      unwrap(
+        api.POST('/topics/{id}/reopen', { ...id(topicId), body: { stage } }),
+      ),
+    onSuccess: (data) => {
+      qc.setQueryData(keys.topics.detail(topicId), data)
+      invalidateStudy(qc, topicId)
+    },
+  })
+}
+
+export function useAddScheduleEntry(topicId: number) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (date: string) =>
+      unwrap(
+        api.POST('/topics/{id}/schedule-entries', {
+          ...id(topicId),
+          body: { date },
+        }),
+      ),
+    onSuccess: () => invalidateStudy(qc, topicId),
+  })
+}
+
+export function useDeleteScheduleEntry(topicId?: number) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (entryId: number) =>
+      unwrap(api.DELETE('/schedule-entries/{id}', id(entryId))),
+    onSuccess: () => invalidateStudy(qc, topicId),
   })
 }

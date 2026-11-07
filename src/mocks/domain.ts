@@ -194,6 +194,30 @@ export function topicDetail(db: Db, t: DbTopic): Schemas['TopicDetail'] {
     },
     createdAt: t.createdAt,
     updatedAt: t.updatedAt,
+    lastSessionOn: lastSessionOn(db, t.id),
+    stageDates: stageDates(db, t),
+  }
+}
+
+/** Primeiro dia em que cada etapa foi alcançada (pelas sessões), respeitando a etapa atual. */
+function stageDates(db: Db, t: DbTopic): Schemas['TopicDetail']['stageDates'] {
+  const ss = db.sessions
+    .filter((s) => s.topicId === t.id)
+    .sort((a, b) => a.day.localeCompare(b.day))
+  const first = (pick: (s: DbSession) => boolean) => ss.find(pick)?.day ?? null
+  const order = ['planned', 'studying', 'practicing', 'completed']
+  const reached = (stage: string) =>
+    order.indexOf(t.stage) >= order.indexOf(stage)
+  return {
+    studying: reached('studying')
+      ? (first((s) => s.studied || s.practiced || s.completed) ?? t.startedOn)
+      : null,
+    practicing: reached('practicing')
+      ? first((s) => s.practiced || s.completed)
+      : null,
+    completed: reached('completed')
+      ? (t.completedOn ?? first((s) => s.completed))
+      : null,
   }
 }
 
