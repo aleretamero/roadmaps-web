@@ -12,7 +12,7 @@ import { FilesTab } from '@/features/topic/FilesTab'
 import { ResourcesPanel } from '@/features/topic/ResourcesPanel'
 import { TopicTimeline } from '@/features/topic/TopicTimeline'
 import { LogSessionDialog } from '@/components/LogSession'
-import { NotesPanel } from '@/components/notes/NotesPanel'
+import { LazyNotesPanel } from '@/components/notes/LazyNotesPanel'
 import type { TopicTab } from '@/features/topic/TopicPage'
 import { errorMessage } from '@/lib/api/errors'
 import {
@@ -94,7 +94,7 @@ function Topic() {
             </FilesTab>
           ),
           resources: <ResourcesPanel topicId={id} />,
-          notes: <NotesPanel owner={{ kind: 'topic', id }} />,
+          notes: <LazyNotesPanel owner={{ kind: 'topic', id }} />,
         }}
       />
       <LogSessionDialog

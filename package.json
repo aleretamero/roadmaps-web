@@ -10,6 +10,7 @@
     "dev": "vite dev --port 3000",
     "build": "vite build",
     "preview": "vite preview",
+    "size": "node scripts/check-bundle.mjs",
     "typecheck": "tsr generate && openapi-typescript contracts/openapi.yaml -o src/lib/api/schema.d.ts --silent && tsc --noEmit",
     "lint": "eslint .",
     "format": "eslint --fix . ; prettier --write .",
