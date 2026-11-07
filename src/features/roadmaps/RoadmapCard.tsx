@@ -84,7 +84,9 @@ export function RoadmapCard({
             />
             {st.label}
           </span>
-          <DropdownMenu>
+          {/* modal={false}: o Apagar abre um diálogo; com o menu modal, o foco e o
+              pointer-events do body brigam entre os dois. */}
+          <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
               <IconButton label={`Ações de ${r.name}`} size="sm">
                 <MoreHorizontal />

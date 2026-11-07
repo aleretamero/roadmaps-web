@@ -43,6 +43,9 @@ export const Ativos: Story = {
       expect.objectContaining({ name: 'Frontend' }),
       true,
     )
+    await waitFor(() => expect(screen.queryByRole('menu')).toBeNull(), {
+      timeout: 3000,
+    })
   },
 }
 
@@ -56,6 +59,7 @@ export const ApagarComConfirmacao: Story = {
       await screen.findByRole('menuitem', { name: 'Apagar…' }),
     )
     const dialog = await screen.findByRole('alertdialog')
+    await waitFor(() => expect(dialog).toBeVisible(), { timeout: 3000 })
     await expect(within(dialog).getByText('Apagar “Algoritmos”?')).toBeVisible()
     await userEvent.click(
       within(dialog).getByRole('button', { name: 'Apagar roadmap' }),
