@@ -8,7 +8,8 @@ import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 
 import { AppProviders } from '@/components/AppProviders'
-import { Toaster } from '@/components/ui/sonner'
+import { AppToaster } from '@/components/AppToaster'
+import { NotFound } from '@/components/RouteStates'
 import appCss from '../styles/app.css?url'
 
 export type RouterContext = { queryClient: QueryClient }
@@ -35,6 +36,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
     ],
   }),
   shellComponent: RootDocument,
+  notFoundComponent: NotFound,
 })
 
 function RootDocument({ children }: { children: React.ReactNode }) {
@@ -45,7 +47,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         <AppProviders>{children}</AppProviders>
-        <Toaster position="bottom-center" />
+        <AppToaster />
         <TanStackDevtools
           config={{
             position: 'bottom-right',

@@ -10,13 +10,38 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppRouteImport } from './routes/_app'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
+import { Route as AppScheduleRouteImport } from './routes/_app/schedule'
 import { Route as DevComponentsRouteImport } from './routes/dev.components'
 import { Route as DevTokensRouteImport } from './routes/dev.tokens'
+import { Route as AppRoadmapsIndexRouteImport } from './routes/_app/roadmaps.index'
+import { Route as AppSettingsSectionRouteImport } from './routes/_app/settings.$section'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AppRoute = AppRouteImport.update({
+  id: '/_app',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppDashboardRoute = AppDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppScheduleRoute = AppScheduleRouteImport.update({
+  id: '/schedule',
+  path: '/schedule',
+  getParentRoute: () => AppRoute,
 } as any)
 const DevComponentsRoute = DevComponentsRouteImport.update({
   id: '/dev/components',
@@ -28,33 +53,87 @@ const DevTokensRoute = DevTokensRouteImport.update({
   path: '/dev/tokens',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppRoadmapsIndexRoute = AppRoadmapsIndexRouteImport.update({
+  id: '/roadmaps/',
+  path: '/roadmaps/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSettingsSectionRoute = AppSettingsSectionRouteImport.update({
+  id: '/settings/$section',
+  path: '/settings/$section',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/dashboard': typeof AppDashboardRoute
+  '/schedule': typeof AppScheduleRoute
   '/dev/components': typeof DevComponentsRoute
   '/dev/tokens': typeof DevTokensRoute
+  '/settings/$section': typeof AppSettingsSectionRoute
+  '/roadmaps/': typeof AppRoadmapsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/dashboard': typeof AppDashboardRoute
+  '/schedule': typeof AppScheduleRoute
   '/dev/components': typeof DevComponentsRoute
   '/dev/tokens': typeof DevTokensRoute
+  '/settings/$section': typeof AppSettingsSectionRoute
+  '/roadmaps': typeof AppRoadmapsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_app': typeof AppRouteWithChildren
+  '/login': typeof LoginRoute
+  '/_app/dashboard': typeof AppDashboardRoute
+  '/_app/schedule': typeof AppScheduleRoute
   '/dev/components': typeof DevComponentsRoute
   '/dev/tokens': typeof DevTokensRoute
+  '/_app/settings/$section': typeof AppSettingsSectionRoute
+  '/_app/roadmaps/': typeof AppRoadmapsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/dev/components' | '/dev/tokens'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/dashboard'
+    | '/schedule'
+    | '/dev/components'
+    | '/dev/tokens'
+    | '/settings/$section'
+    | '/roadmaps/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dev/components' | '/dev/tokens'
-  id: '__root__' | '/' | '/dev/components' | '/dev/tokens'
+  to:
+    | '/'
+    | '/login'
+    | '/dashboard'
+    | '/schedule'
+    | '/dev/components'
+    | '/dev/tokens'
+    | '/settings/$section'
+    | '/roadmaps'
+  id:
+    | '__root__'
+    | '/'
+    | '/_app'
+    | '/login'
+    | '/_app/dashboard'
+    | '/_app/schedule'
+    | '/dev/components'
+    | '/dev/tokens'
+    | '/_app/settings/$section'
+    | '/_app/roadmaps/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AppRoute: typeof AppRouteWithChildren
+  LoginRoute: typeof LoginRoute
   DevComponentsRoute: typeof DevComponentsRoute
   DevTokensRoute: typeof DevTokensRoute
 }
@@ -67,6 +146,34 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_app': {
+      id: '/_app'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app/dashboard': {
+      id: '/_app/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AppDashboardRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/schedule': {
+      id: '/_app/schedule'
+      path: '/schedule'
+      fullPath: '/schedule'
+      preLoaderRoute: typeof AppScheduleRouteImport
+      parentRoute: typeof AppRoute
     }
     '/dev/components': {
       id: '/dev/components'
@@ -82,11 +189,43 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DevTokensRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/roadmaps/': {
+      id: '/_app/roadmaps/'
+      path: '/roadmaps'
+      fullPath: '/roadmaps/'
+      preLoaderRoute: typeof AppRoadmapsIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/settings/$section': {
+      id: '/_app/settings/$section'
+      path: '/settings/$section'
+      fullPath: '/settings/$section'
+      preLoaderRoute: typeof AppSettingsSectionRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
+interface AppRouteChildren {
+  AppDashboardRoute: typeof AppDashboardRoute
+  AppScheduleRoute: typeof AppScheduleRoute
+  AppSettingsSectionRoute: typeof AppSettingsSectionRoute
+  AppRoadmapsIndexRoute: typeof AppRoadmapsIndexRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppDashboardRoute: AppDashboardRoute,
+  AppScheduleRoute: AppScheduleRoute,
+  AppSettingsSectionRoute: AppSettingsSectionRoute,
+  AppRoadmapsIndexRoute: AppRoadmapsIndexRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AppRoute: AppRouteWithChildren,
+  LoginRoute: LoginRoute,
   DevComponentsRoute: DevComponentsRoute,
   DevTokensRoute: DevTokensRoute,
 }

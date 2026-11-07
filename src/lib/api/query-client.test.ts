@@ -30,4 +30,19 @@ describe('createQueryClient', () => {
       .catch(() => {})
     expect(onUnauthorized).toHaveBeenCalledOnce()
   })
+
+  it('não avisa quando a consulta trata o 401 sozinha (guarda de rota)', async () => {
+    const onUnauthorized = vi.fn()
+    const qc = createQueryClient({ onUnauthorized })
+    await qc
+      .fetchQuery({
+        queryKey: ['z'],
+        meta: { handlesUnauthorized: true },
+        queryFn: () => {
+          throw new ApiError(401)
+        },
+      })
+      .catch(() => {})
+    expect(onUnauthorized).not.toHaveBeenCalled()
+  })
 })

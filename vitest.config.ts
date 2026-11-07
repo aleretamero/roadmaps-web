@@ -33,6 +33,8 @@ export default defineConfig({
         ],
         test: {
           name: 'storybook',
+          // Animações dos menus (Radix) às vezes passam do tempo no CI.
+          retry: process.env.CI ? 1 : 0,
           browser: {
             enabled: true,
             headless: true,

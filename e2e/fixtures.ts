@@ -32,9 +32,11 @@ export const test = base.extend<Fixtures>({
     page.on('pageerror', (e) => errors.push(e.message))
     page.on('console', (m) => {
       // 4xx/5xx esperados dos cenários aparecem como "Failed to load resource".
+      // O React (dev) também loga erros que um errorComponent tratou.
       if (
         m.type() === 'error' &&
-        !m.text().startsWith('Failed to load resource')
+        !m.text().startsWith('Failed to load resource') &&
+        !m.text().includes('using the error boundary you provided')
       )
         errors.push(m.text())
     })
