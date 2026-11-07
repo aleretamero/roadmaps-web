@@ -24,25 +24,12 @@ import {
   num,
   problem,
   problemResponse,
+  paginate,
 } from './http'
 
 /** Sessão ordena pelo dia em que aconteceu; alteração, pelo momento em que foi feita. */
 const sortKey = (i: Schemas['TimelineItem']) =>
   i.session ? `${i.session.day}T${i.session.createdAt.slice(11)}` : i.occurredAt
-
-/** Paginação por cursor (o cursor é a posição do próximo item). */
-function paginate<T>(
-  items: Array<T>,
-  query: { get: (k: 'limit' | 'cursor') => string | null | undefined },
-) {
-  const limit = Math.min(100, Math.max(1, Number(query.get('limit')) || 20))
-  const start = Number(query.get('cursor')) || 0
-  const next = start + limit
-  return {
-    items: items.slice(start, next),
-    nextCursor: next < items.length ? String(next) : null,
-  }
-}
 
 function validDay(day: string | undefined) {
   if (!day || !/^\d{4}-\d{2}-\d{2}$/.test(day))

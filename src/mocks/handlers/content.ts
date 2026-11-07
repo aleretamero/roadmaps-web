@@ -5,11 +5,13 @@ import { fileTree, matcher, now, snippet, topicRef } from '../domain'
 import {
   etag,
   findModule,
+  findRoadmap,
   findTopic,
   http,
   noContent,
   notFound,
   num,
+  paginate,
   preconditionFailed,
   problem,
   problemResponse,
@@ -178,7 +180,15 @@ export const contentHandlers = [
     const db = getDb()
     const q = query.get('q')
     const type = query.get('type')
+    const includeArchived = query.get('includeArchived') === 'true'
     const match = matcher(q)
+    // Tópicos de roadmaps arquivados só entram quando pedido.
+    const visible = (topicId: number) => {
+      const t = findTopic(topicId)
+      const m = t && findModule(t.moduleId)
+      const r = m && findRoadmap(m.roadmapId)
+      return !!r && (includeArchived || !r.archivedAt)
+    }
     const items: Array<Schemas['SearchResult']> = []
     if (q.trim().length >= 2) {
       if (!type || type === 'topics')
@@ -219,7 +229,11 @@ export const contentHandlers = [
             })
         }
     }
-    return response(200).json({ items, total: items.length, nextCursor: null })
+    const shown = items.filter((i) => visible(i.topic.id))
+    return response(200).json({
+      ...paginate(shown, query),
+      total: shown.length,
+    })
   }),
 
   http.get('/topics/{id}/files', ({ params, response }) => {

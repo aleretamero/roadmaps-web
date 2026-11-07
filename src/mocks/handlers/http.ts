@@ -70,3 +70,17 @@ export function required(fields: Record<string, unknown>) {
     ? problemResponse(400, 'validation_error', 'Campos inválidos', errors)
     : null
 }
+
+/** Paginação por cursor (o cursor é a posição do próximo item). */
+export function paginate<T>(
+  items: Array<T>,
+  query: { get: (k: 'limit' | 'cursor') => string | null | undefined },
+) {
+  const limit = Math.min(100, Math.max(1, Number(query.get('limit')) || 20))
+  const start = Number(query.get('cursor')) || 0
+  const next = start + limit
+  return {
+    items: items.slice(start, next),
+    nextCursor: next < items.length ? String(next) : null,
+  }
+}

@@ -1809,6 +1809,8 @@ export interface operations {
                 /** @description Aceita "frase exata", prefixo* e -excluir */
                 q: string;
                 type?: "topics" | "notes" | "files";
+                /** @description Inclui tópicos de roadmaps arquivados (padrão false). */
+                includeArchived?: boolean;
                 limit?: number;
                 cursor?: string;
             };

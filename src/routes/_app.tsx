@@ -5,9 +5,10 @@ import {
   useNavigate,
 } from '@tanstack/react-router'
 import { useSuspenseQuery } from '@tanstack/react-query'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { AppHeader } from '@/features/app-shell/AppHeader'
+import { SearchDialog } from '@/features/search/SearchDialog'
 import { LogSessionProvider } from '@/components/LogSession'
 import { RescheduleProvider } from '@/components/Reschedule'
 import { PagePending, RouteError } from '@/components/RouteStates'
@@ -77,16 +78,43 @@ function Header() {
   useEffect(() => {
     if (takeWelcome()) toast.success(`Olá, ${firstName}!`)
   }, [firstName])
-  return (
-    <AppHeader
-      name={me.name}
-      email={me.email}
-      onLogout={() =>
-        logout.mutate(undefined, {
-          onSuccess: () => void navigate({ to: '/' }),
-          onError: () => toast.error('Não foi possível sair. Tente de novo.'),
-        })
+  const [searching, setSearching] = useState(false)
+  // Ctrl/⌘+K abre a busca de qualquer tela.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault()
+        setSearching(true)
       }
-    />
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
+  return (
+    <>
+      <SearchDialog
+        open={searching}
+        onOpenChange={setSearching}
+        onOpenResult={({ topicId, tab }) => {
+          setSearching(false)
+          void navigate({
+            to: '/topics/$topicId',
+            params: { topicId: String(topicId) },
+            search: tab ? { tab } : {},
+          })
+        }}
+      />
+      <AppHeader
+        onSearch={() => setSearching(true)}
+        name={me.name}
+        email={me.email}
+        onLogout={() =>
+          logout.mutate(undefined, {
+            onSuccess: () => void navigate({ to: '/' }),
+            onError: () => toast.error('Não foi possível sair. Tente de novo.'),
+          })
+        }
+      />
+    </>
   )
 }
