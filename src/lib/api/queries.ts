@@ -589,6 +589,43 @@ export function useDeleteNote(owner: NoteOwner) {
   })
 }
 
+function invalidateResources(qc: QueryClient, topicId: number) {
+  void qc.invalidateQueries({ queryKey: keys.topics.resources(topicId) })
+  void qc.invalidateQueries({ queryKey: keys.topics.detail(topicId) })
+}
+
+export function useCreateResource(topicId: number) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (body: Schemas['ResourceRequest']) =>
+      unwrap(api.POST('/topics/{id}/resources', { ...id(topicId), body })),
+    onSuccess: () => invalidateResources(qc, topicId),
+  })
+}
+
+export function useUpdateResource(topicId: number) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({
+      resourceId,
+      body,
+    }: {
+      resourceId: number
+      body: Schemas['ResourceRequest']
+    }) => unwrap(api.PATCH('/resources/{id}', { ...id(resourceId), body })),
+    onSuccess: () => invalidateResources(qc, topicId),
+  })
+}
+
+export function useDeleteResource(topicId: number) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (resourceId: number) =>
+      unwrap(api.DELETE('/resources/{id}', id(resourceId))),
+    onSuccess: () => invalidateResources(qc, topicId),
+  })
+}
+
 /** Agendar qualquer tópico num dia (Agenda). */
 export function useScheduleTopic() {
   const qc = useQueryClient()
