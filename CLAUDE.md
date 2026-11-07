@@ -9,7 +9,7 @@ Frontend do Gestor pessoal de roadmaps e conhecimento. Este repositório é dese
 3. Crie a branch `feat/<chave-da-issue>-<assunto>` (ex.: `feat/fu03-painel`).
 4. Implemente com o que já existe: `src/components/ui` (shadcn), `src/components`, tokens de `src/styles/tokens.css`. Componente novo do shadcn entra pelo shadcn MCP ou `pnpm dlx shadcn@latest add <nome>`.
 5. Entregue com story (`*.stories.tsx`), teste (unitário e/ou E2E) e `pnpm check` verde. Se a issue mexe em componente com story, rode também `pnpm test:stories`.
-6. Abra o PR com "Closes #N", um resumo do que mudou, a validação feita e as decisões tomadas.
+6. Abra o PR com "Closes #N", um resumo do que mudou, a validação feita e as decisões tomadas. Só faça o merge com o CI verde (`.github/workflows/ci.yml`: check, Storybook e E2E; a `main` exige os três).
 7. Atualize a issue: marque `[x]` nos itens entregues e comente o resumo. Item que ficou para outra issue fica desmarcado, com o motivo no comentário.
 
 **Nunca pare para perguntar.** Quando a issue deixar algo em aberto, escolha a opção mais simples que respeita o protótipo e o planejamento da API, e registre a escolha na seção "Decisões tomadas" do PR.
