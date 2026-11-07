@@ -336,6 +336,30 @@ export function useUpdatePreferences() {
   })
 }
 
+export function useUpdateMe() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (body: Schemas['UpdateUserRequest']) =>
+      unwrap(api.PATCH('/me', { body })),
+    onSuccess: (data) => {
+      qc.setQueryData(keys.me, data)
+      // O fuso muda o que é "hoje" no painel e na agenda.
+      invalidateStudy(qc)
+    },
+  })
+}
+
+export function useDisconnectDrive() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: () => unwrap(api.DELETE('/integrations/google-drive')),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: keys.integrations })
+      void qc.invalidateQueries({ queryKey: keys.topics.all })
+    },
+  })
+}
+
 /** Encerra a sessão e limpa o cache (nada da conta fica na tela depois de sair). */
 export function useLogout() {
   const qc = useQueryClient()
