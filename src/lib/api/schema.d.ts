@@ -1154,6 +1154,8 @@ export interface components {
         ImportTopic: {
             title: string;
             isOptional?: boolean;
+            /** @description Data prevista (opcional). */
+            date?: string | null;
         };
         ImportModule: {
             title: string;

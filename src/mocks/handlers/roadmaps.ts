@@ -89,6 +89,16 @@ function addModule(
       db.dependencies.push({ moduleId: mod.id, dependsOnModuleId: d })
     const other = db.modules.find((m) => m.id === alternativeTo)
     if (other) other.kind = 'alternative'
+  } else if (after.length === 0) {
+    // Sem âncora: vai para o final, depois dos módulos que ainda não têm ninguém
+    // depois deles (os opcionais não seguram a sequência).
+    const sinks = mods.filter(
+      (m) =>
+        m.kind !== 'optional' &&
+        !db.dependencies.some((d) => d.dependsOnModuleId === m.id),
+    )
+    for (const m of sinks)
+      db.dependencies.push({ moduleId: mod.id, dependsOnModuleId: m.id })
   } else {
     for (const a of after) {
       // Quem dependia de `a` passa a depender do módulo novo.
@@ -149,7 +159,11 @@ function addTopics(
   })
 }
 
-/** Valida e (se não for dry run) importa módulos, resolvendo `after`/`alternativeTo` por título. */
+/**
+ * Valida e (se não for dry run) importa módulos, resolvendo `after`/`alternativeTo`
+ * por título (de um módulo que já existe ou de outro módulo do mesmo arquivo).
+ * Recusa título repetido, referência que não existe e ciclo de dependências.
+ */
 function importModules(
   db: Db,
   roadmapId: number,
@@ -158,54 +172,98 @@ function importModules(
 ): { errors: Record<string, Array<string>>; modules: number; topics: number } {
   const errors: Record<string, Array<string>> = {}
   const err = (path: string, msg: string) => (errors[path] ??= []).push(msg)
+  const low = (t: string) => t.trim().toLocaleLowerCase('pt-BR')
   const existing = new Map(
-    modulesOf(db, roadmapId).map((m) => [m.title.toLowerCase(), m.id]),
+    modulesOf(db, roadmapId).map((m) => [low(m.title), m.id]),
   )
-  const inFile = new Set<string>()
+  const fileIndex = new Map<string, number>()
   modules.forEach((m, i) => {
-    if (!m.title.trim()) err(`modules[${i}].title`, 'Obrigatório')
-    const known = (t: string) =>
-      existing.has(t.toLowerCase()) || inFile.has(t.toLowerCase())
+    const t = low(m.title)
+    if (!t) return err(`modules[${i}].title`, 'Obrigatório')
+    if (existing.has(t))
+      err(
+        `modules[${i}].title`,
+        `Já existe um módulo “${m.title.trim()}” neste roadmap`,
+      )
+    else if (fileIndex.has(t))
+      err(`modules[${i}].title`, `Módulo “${m.title.trim()}” repetido`)
+    else fileIndex.set(t, i)
+  })
+  const known = (t: string) => existing.has(low(t)) || fileIndex.has(low(t))
+  modules.forEach((m, i) => {
     ;(m.after ?? []).forEach((a, j) => {
-      if (!known(a))
-        err(`modules[${i}].after[${j}]`, `Módulo “${a}” não existe antes deste`)
-      if (a.toLowerCase() === m.title.toLowerCase())
+      if (low(a) === low(m.title))
         err(
           `modules[${i}].after[${j}]`,
           'Um módulo não pode depender dele mesmo',
         )
+      else if (!known(a))
+        err(`modules[${i}].after[${j}]`, `Módulo “${a}” não existe`)
     })
     if (m.alternativeTo && !known(m.alternativeTo))
       err(
         `modules[${i}].alternativeTo`,
         `Módulo “${m.alternativeTo}” não existe`,
       )
+    const seen = new Set<string>()
     ;(m.topics ?? []).forEach((t, j) => {
-      if (!t.title.trim())
-        err(`modules[${i}].topics[${j}].title`, 'Obrigatório')
+      const tt = low(t.title)
+      if (!tt) err(`modules[${i}].topics[${j}].title`, 'Obrigatório')
+      else if (seen.has(tt))
+        err(
+          `modules[${i}].topics[${j}].title`,
+          `Tópico “${t.title.trim()}” repetido no módulo`,
+        )
+      seen.add(tt)
     })
-    inFile.add(m.title.toLowerCase())
   })
+  // Ciclo entre módulos do arquivo (A depois de B, B depois de A).
+  const deps = (i: number) =>
+    [
+      ...(modules[i]!.after ?? []),
+      ...(modules[i]!.alternativeTo ? [modules[i]!.alternativeTo] : []),
+    ]
+      .map((a) => fileIndex.get(low(a)))
+      .filter((x): x is number => x !== undefined && x !== i)
+  const state = new Map<number, 'visiting' | 'done'>()
+  const order: Array<number> = []
+  const visit = (i: number, path: Array<number>): boolean => {
+    if (state.get(i) === 'done') return true
+    if (state.get(i) === 'visiting') {
+      const cycle = [...path.slice(path.indexOf(i)), i]
+        .map((k) => modules[k]!.title.trim())
+        .join(' → ')
+      err(`modules[${i}].after`, `Cria um ciclo: ${cycle}`)
+      return false
+    }
+    state.set(i, 'visiting')
+    for (const d of deps(i)) if (!visit(d, [...path, i])) return false
+    state.set(i, 'done')
+    order.push(i)
+    return true
+  }
+  for (const i of fileIndex.values()) if (!visit(i, [])) break
+
   const topics = modules.reduce((n, m) => n + (m.topics?.length ?? 0), 0)
   if (dryRun || Object.keys(errors).length)
     return { errors, modules: modules.length, topics }
   const ids = new Map(existing)
-  for (const m of modules) {
+  // Cria na ordem do arquivo, mas quem é referenciado entra antes de quem referencia.
+  for (const i of order) {
+    const m = modules[i]!
     const after = (m.after ?? [])
-      .map((a) => ids.get(a.toLowerCase())!)
-      .filter(Boolean)
-    const alt = m.alternativeTo
-      ? (ids.get(m.alternativeTo.toLowerCase()) ?? null)
-      : null
+      .map((a) => ids.get(low(a)))
+      .filter((x): x is number => x !== undefined)
+    const alt = m.alternativeTo ? (ids.get(low(m.alternativeTo)) ?? null) : null
     const mod = addModule(db, roadmapId, m, after, alt)
-    ids.set(mod.title.toLowerCase(), mod.id)
+    ids.set(low(mod.title), mod.id)
     addTopics(
       db,
       mod.id,
       (m.topics ?? []).map((t) => ({
         title: t.title,
         isOptional: t.isOptional ?? false,
-        date: null,
+        date: t.date ?? null,
       })),
     )
   }

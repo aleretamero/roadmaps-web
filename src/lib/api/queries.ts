@@ -178,7 +178,7 @@ export function useCreateRoadmap() {
   return useMutation({
     mutationFn: (body: Schemas['CreateRoadmapRequest']) =>
       unwrap(api.POST('/roadmaps', { body })),
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.roadmaps.all }),
+    onSuccess: () => invalidateStudy(qc),
   })
 }
 
@@ -251,5 +251,41 @@ export function useLogout() {
   return useMutation({
     mutationFn: () => unwrap(api.POST('/auth/logout')),
     onSuccess: () => qc.clear(),
+  })
+}
+
+/** Confere uma importação sem gravar (`?dryRun=true`). Lança `ApiError` com os erros por campo. */
+export function importDryRun(
+  target:
+    | { roadmapId: number; body: Schemas['ImportModulesRequest'] }
+    | { roadmapId?: undefined; body: Schemas['ImportRoadmapRequest'] },
+) {
+  return target.roadmapId === undefined
+    ? unwrap(
+        api.POST('/roadmaps/import', {
+          params: { query: { dryRun: true } },
+          body: target.body,
+        }),
+      )
+    : unwrap(
+        api.POST('/roadmaps/{id}/import', {
+          params: { path: { id: target.roadmapId }, query: { dryRun: true } },
+          body: target.body,
+        }),
+      )
+}
+
+/** Adiciona módulos (com tópicos) a um roadmap existente. */
+export function useImportIntoRoadmap(roadmapId: number) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (body: Schemas['ImportModulesRequest']) =>
+      unwrap(
+        api.POST('/roadmaps/{id}/import', {
+          params: { path: { id: roadmapId } },
+          body,
+        }),
+      ),
+    onSuccess: () => invalidateStudy(qc),
   })
 }

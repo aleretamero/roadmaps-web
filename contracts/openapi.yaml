@@ -2454,6 +2454,13 @@ components:
         title:
           type: string
         isOptional: *id004
+        date:
+          description: Data prevista (opcional).
+          anyOf:
+            - type: string
+              format: date
+              example: '2026-11-07'
+            - type: 'null'
       required:
         - title
     ImportModule:
