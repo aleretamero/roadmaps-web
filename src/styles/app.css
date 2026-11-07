@@ -24,3 +24,18 @@
     outline-offset: 2px;
   }
 }
+
+/* Fundo pontilhado das prévias do mapa (como no protótipo). */
+@utility bg-dots {
+  background-image: radial-gradient(var(--color-line) 1px, transparent 1px);
+  background-size: 18px 18px;
+}
+
+/* Pontilhado claro sobre fundo escuro (faixa final da landing). */
+@utility bg-dots-inverse {
+  background-image: radial-gradient(
+    rgb(255 255 255 / 0.08) 1px,
+    transparent 1px
+  );
+  background-size: 22px 22px;
+}

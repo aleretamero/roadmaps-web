@@ -22,6 +22,7 @@
   --color-surface: #ffffff;
   --color-surface-raised: #fafbf9;
   --color-surface-sunken: #eef0ec;
+  --color-surface-hover: #e8eae5;
 
   /* Linhas e bordas */
   --color-line: #e2e4e0;
@@ -59,6 +60,10 @@
   --color-heat-3: #3f8f58;
   --color-heat-4: #1e5a37;
 
+  /* Prévias: dia com sessão na semana e caminho não escolhido no mapa */
+  --color-day-active: #f0f4ef;
+  --color-module-alt: #70766f;
+
   /* Avatar da conta (iniciais) */
   --color-avatar: #2b4a35;
   --color-avatar-fg: #ffffff;
@@ -80,4 +85,8 @@
   --shadow-menu: 0 12px 32px rgb(21 23 26 / 0.16);
   --shadow-dialog: 0 24px 64px rgb(21 23 26 / 0.28);
   --shadow-ring-inset: inset 0 0 0 1px var(--color-surface-sunken);
+  --shadow-preview: 0 24px 60px rgb(21 23 26 / 0.08);
+  --shadow-hero: 0 40px 100px rgb(21 23 26 / 0.12);
+  --shadow-cta: 0 8px 24px rgb(21 23 26 / 0.18);
+  --shadow-card-open: 0 10px 30px rgb(21 23 26 / 0.06);
 }
