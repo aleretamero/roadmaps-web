@@ -1,7 +1,9 @@
 @import 'tailwindcss';
 @import '@fontsource-variable/geist';
 @import '@fontsource-variable/geist-mono';
+@import 'tw-animate-css';
 @import './tokens.css';
+@import './shadcn.css';
 
 @layer base {
   html,

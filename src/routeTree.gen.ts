@@ -10,11 +10,17 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DevComponentsRouteImport } from './routes/dev.components'
 import { Route as DevTokensRouteImport } from './routes/dev.tokens'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DevComponentsRoute = DevComponentsRouteImport.update({
+  id: '/dev/components',
+  path: '/dev/components',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DevTokensRoute = DevTokensRouteImport.update({
@@ -25,27 +31,31 @@ const DevTokensRoute = DevTokensRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/dev/components': typeof DevComponentsRoute
   '/dev/tokens': typeof DevTokensRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/dev/components': typeof DevComponentsRoute
   '/dev/tokens': typeof DevTokensRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/dev/components': typeof DevComponentsRoute
   '/dev/tokens': typeof DevTokensRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/dev/tokens'
+  fullPaths: '/' | '/dev/components' | '/dev/tokens'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dev/tokens'
-  id: '__root__' | '/' | '/dev/tokens'
+  to: '/' | '/dev/components' | '/dev/tokens'
+  id: '__root__' | '/' | '/dev/components' | '/dev/tokens'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DevComponentsRoute: typeof DevComponentsRoute
   DevTokensRoute: typeof DevTokensRoute
 }
 
@@ -56,6 +66,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dev/components': {
+      id: '/dev/components'
+      path: '/dev/components'
+      fullPath: '/dev/components'
+      preLoaderRoute: typeof DevComponentsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dev/tokens': {
@@ -70,17 +87,9 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DevComponentsRoute: DevComponentsRoute,
   DevTokensRoute: DevTokensRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}
