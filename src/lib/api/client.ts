@@ -12,6 +12,8 @@ export const API_BASE_URL: string = import.meta.env.VITE_API_URL ?? '/api/v1'
 export const api = createClient<paths>({
   baseUrl: API_BASE_URL,
   credentials: 'include',
+  // Lido na hora da chamada: permite que o MSW intercepte em testes.
+  fetch: (request) => globalThis.fetch(request),
 })
 
 type FetchResult<T> = {

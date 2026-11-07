@@ -8,6 +8,7 @@ const config: StorybookConfig = {
     '@storybook/addon-vitest',
     // MCP em http://localhost:6006/mcp para os agentes listarem e lerem as stories
     '@storybook/addon-mcp',
+    'msw-storybook-addon',
   ],
   framework: {
     name: '@storybook/react-vite',
@@ -15,6 +16,8 @@ const config: StorybookConfig = {
       builder: { viteConfigPath: '.storybook/vite.config.ts' },
     },
   },
+  // public/ tem o mockServiceWorker.js do MSW.
+  staticDirs: ['../public'],
   core: { disableTelemetry: true },
 }
 

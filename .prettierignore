@@ -7,3 +7,4 @@ coverage
 storybook-static
 docs/prototype
 src/lib/api/schema.d.ts
+public/mockServiceWorker.js
