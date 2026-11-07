@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm *)",
+      "Bash(npx *)",
+      "Bash(node *)",
+      "Bash(git *)",
+      "Bash(gh issue *)",
+      "Bash(gh pr *)",
+      "Bash(gh api *)",
+      "Read",
+      "Edit",
+      "Write",
+      "mcp__playwright__*",
+      "mcp__shadcn__*",
+      "mcp__storybook__*"
+    ],
+    "deny": ["Bash(git push --force*)", "Bash(rm -rf /*)"]
+  }
+}

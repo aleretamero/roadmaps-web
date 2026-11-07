@@ -16,6 +16,7 @@ export default [
       'eslint.config.js',
       'prettier.config.js',
       'storybook-static',
+      'docs/prototype',
       '!.storybook',
     ],
   },
