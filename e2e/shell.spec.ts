@@ -111,7 +111,9 @@ test.describe('shell do app', () => {
       await expect(page).toHaveURL(/\/login\?redirect=/)
       const redirect = new URL(page.url()).searchParams.get('redirect')
       expect(redirect).toMatch(/^\/dashboard/)
-      await expect(page.getByRole('heading', { name: 'Entrar' })).toBeVisible()
+      await expect(
+        page.getByRole('heading', { name: 'Entre na sua conta' }),
+      ).toBeVisible()
     })
   })
 })
