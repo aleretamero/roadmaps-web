@@ -16,6 +16,7 @@ import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
 import { Route as AppScheduleRouteImport } from './routes/_app/schedule'
 import { Route as DevComponentsRouteImport } from './routes/dev.components'
 import { Route as DevTokensRouteImport } from './routes/dev.tokens'
+import { Route as AppModulesModuleIdRouteImport } from './routes/_app/modules.$moduleId'
 import { Route as AppRoadmapsIndexRouteImport } from './routes/_app/roadmaps.index'
 import { Route as AppRoadmapsRoadmapIdRouteImport } from './routes/_app/roadmaps.$roadmapId'
 import { Route as AppRoadmapsNewRouteImport } from './routes/_app/roadmaps.new'
@@ -56,6 +57,11 @@ const DevTokensRoute = DevTokensRouteImport.update({
   path: '/dev/tokens',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppModulesModuleIdRoute = AppModulesModuleIdRouteImport.update({
+  id: '/modules/$moduleId',
+  path: '/modules/$moduleId',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppRoadmapsIndexRoute = AppRoadmapsIndexRouteImport.update({
   id: '/roadmaps/',
   path: '/roadmaps/',
@@ -89,6 +95,7 @@ export interface FileRoutesByFullPath {
   '/schedule': typeof AppScheduleRoute
   '/dev/components': typeof DevComponentsRoute
   '/dev/tokens': typeof DevTokensRoute
+  '/modules/$moduleId': typeof AppModulesModuleIdRoute
   '/roadmaps/$roadmapId': typeof AppRoadmapsRoadmapIdRoute
   '/roadmaps/new': typeof AppRoadmapsNewRoute
   '/settings/$section': typeof AppSettingsSectionRoute
@@ -102,6 +109,7 @@ export interface FileRoutesByTo {
   '/schedule': typeof AppScheduleRoute
   '/dev/components': typeof DevComponentsRoute
   '/dev/tokens': typeof DevTokensRoute
+  '/modules/$moduleId': typeof AppModulesModuleIdRoute
   '/roadmaps/$roadmapId': typeof AppRoadmapsRoadmapIdRoute
   '/roadmaps/new': typeof AppRoadmapsNewRoute
   '/settings/$section': typeof AppSettingsSectionRoute
@@ -117,6 +125,7 @@ export interface FileRoutesById {
   '/_app/schedule': typeof AppScheduleRoute
   '/dev/components': typeof DevComponentsRoute
   '/dev/tokens': typeof DevTokensRoute
+  '/_app/modules/$moduleId': typeof AppModulesModuleIdRoute
   '/_app/roadmaps/$roadmapId': typeof AppRoadmapsRoadmapIdRoute
   '/_app/roadmaps/new': typeof AppRoadmapsNewRoute
   '/_app/settings/$section': typeof AppSettingsSectionRoute
@@ -132,6 +141,7 @@ export interface FileRouteTypes {
     | '/schedule'
     | '/dev/components'
     | '/dev/tokens'
+    | '/modules/$moduleId'
     | '/roadmaps/$roadmapId'
     | '/roadmaps/new'
     | '/settings/$section'
@@ -145,6 +155,7 @@ export interface FileRouteTypes {
     | '/schedule'
     | '/dev/components'
     | '/dev/tokens'
+    | '/modules/$moduleId'
     | '/roadmaps/$roadmapId'
     | '/roadmaps/new'
     | '/settings/$section'
@@ -159,6 +170,7 @@ export interface FileRouteTypes {
     | '/_app/schedule'
     | '/dev/components'
     | '/dev/tokens'
+    | '/_app/modules/$moduleId'
     | '/_app/roadmaps/$roadmapId'
     | '/_app/roadmaps/new'
     | '/_app/settings/$section'
@@ -225,6 +237,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DevTokensRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/modules/$moduleId': {
+      id: '/_app/modules/$moduleId'
+      path: '/modules/$moduleId'
+      fullPath: '/modules/$moduleId'
+      preLoaderRoute: typeof AppModulesModuleIdRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/roadmaps/': {
       id: '/_app/roadmaps/'
       path: '/roadmaps'
@@ -266,6 +285,7 @@ declare module '@tanstack/react-router' {
 interface AppRouteChildren {
   AppDashboardRoute: typeof AppDashboardRoute
   AppScheduleRoute: typeof AppScheduleRoute
+  AppModulesModuleIdRoute: typeof AppModulesModuleIdRoute
   AppRoadmapsRoadmapIdRoute: typeof AppRoadmapsRoadmapIdRoute
   AppRoadmapsNewRoute: typeof AppRoadmapsNewRoute
   AppSettingsSectionRoute: typeof AppSettingsSectionRoute
@@ -276,6 +296,7 @@ interface AppRouteChildren {
 const AppRouteChildren: AppRouteChildren = {
   AppDashboardRoute: AppDashboardRoute,
   AppScheduleRoute: AppScheduleRoute,
+  AppModulesModuleIdRoute: AppModulesModuleIdRoute,
   AppRoadmapsRoadmapIdRoute: AppRoadmapsRoadmapIdRoute,
   AppRoadmapsNewRoute: AppRoadmapsNewRoute,
   AppSettingsSectionRoute: AppSettingsSectionRoute,
