@@ -9,6 +9,7 @@ import {
 import { TopicPage } from '@/features/topic/TopicPage'
 import { TopicTimeline } from '@/features/topic/TopicTimeline'
 import { LogSessionDialog } from '@/components/LogSession'
+import { NotesPanel } from '@/components/notes/NotesPanel'
 import type { TopicTab } from '@/features/topic/TopicPage'
 import { errorMessage } from '@/lib/api/errors'
 import {
@@ -94,7 +95,7 @@ function Topic() {
           resources: placeholder(
             'As referências do tópico estão sendo construídas.',
           ),
-          notes: placeholder('As anotações do tópico estão sendo construídas.'),
+          notes: <NotesPanel owner={{ kind: 'topic', id }} />,
         }}
       />
       <LogSessionDialog

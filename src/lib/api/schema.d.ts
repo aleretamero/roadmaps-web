@@ -1440,6 +1440,8 @@ export interface components {
             /** Format: date-time */
             createdAt: string;
             editedAt: string | null;
+            /** @description Versão da anotação (RowVersion); mande "<version>" em If-Match no PATCH. É o mesmo valor do ETag. */
+            version: number;
         };
         NoteRequest: {
             content: string;

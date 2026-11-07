@@ -505,6 +505,90 @@ export function useDeleteSession(topicId: number) {
   })
 }
 
+/** Onde a anotação fica: num tópico ou num módulo. */
+export type NoteOwner = { kind: 'topic' | 'module'; id: number }
+
+const notesKey = (o: NoteOwner) =>
+  o.kind === 'topic' ? keys.topics.notes(o.id) : keys.modules.notes(o.id)
+
+function invalidateNotes(qc: QueryClient, o: NoteOwner) {
+  void qc.invalidateQueries({ queryKey: notesKey(o) })
+  // Contadores de anotações no tópico/módulo.
+  void qc.invalidateQueries({
+    queryKey:
+      o.kind === 'topic' ? keys.topics.detail(o.id) : keys.modules.detail(o.id),
+  })
+}
+
+/** Anotações do tópico ou do módulo (mais novas primeiro). */
+export const notesQuery = (owner: NoteOwner) =>
+  queryOptions({
+    queryKey: notesKey(owner),
+    queryFn: () =>
+      owner.kind === 'topic'
+        ? unwrap(api.GET('/topics/{id}/notes', id(owner.id)))
+        : unwrap(api.GET('/modules/{id}/notes', id(owner.id))),
+  })
+
+export function useCreateNote(owner: NoteOwner) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (content: string) =>
+      owner.kind === 'topic'
+        ? unwrap(
+            api.POST('/topics/{id}/notes', {
+              ...id(owner.id),
+              body: { content },
+            }),
+          )
+        : unwrap(
+            api.POST('/modules/{id}/notes', {
+              ...id(owner.id),
+              body: { content },
+            }),
+          ),
+    onSuccess: () => invalidateNotes(qc, owner),
+  })
+}
+
+/** Edita com `If-Match`: se outra edição chegou antes, a API responde 412. */
+export function useUpdateNote(owner: NoteOwner) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({
+      note,
+      content,
+    }: {
+      note: Schemas['Note']
+      content: string
+    }) =>
+      unwrap(
+        api.PATCH('/notes/{id}', {
+          params: {
+            path: { id: note.id },
+            header: { 'If-Match': `"${note.version}"` },
+          },
+          body: { content },
+        }),
+      ),
+    onSuccess: () => invalidateNotes(qc, owner),
+    // 412: outra edição chegou antes; busca a versão nova para mostrar.
+    onError: (e) => {
+      if (e instanceof Error && 'status' in e && e.status === 412)
+        invalidateNotes(qc, owner)
+    },
+  })
+}
+
+export function useDeleteNote(owner: NoteOwner) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (noteId: number) =>
+      unwrap(api.DELETE('/notes/{id}', id(noteId))),
+    onSuccess: () => invalidateNotes(qc, owner),
+  })
+}
+
 /** Agendar qualquer tópico num dia (Agenda). */
 export function useScheduleTopic() {
   const qc = useQueryClient()
