@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { AddTopicsDialog } from '@/features/module/AddTopicsDialog'
 import { EditModuleDialog } from '@/features/module/EditModuleDialog'
 import { ModulePage } from '@/features/module/ModulePage'
 import { errorMessage } from '@/lib/api/errors'
@@ -44,6 +45,7 @@ function Module() {
   const update = useUpdateModule(id)
   const create = useCreateTopics(id)
   const [editError, setEditError] = useState<string | null>(null)
+  const [addError, setAddError] = useState<string | null>(null)
   const setSearch = (next: ModuleSearch) =>
     void navigate({ search: next, replace: true })
 
@@ -56,7 +58,6 @@ function Module() {
           setSearch({ ...(tab === 'topics' ? {} : { tab }) })
         }
         onEdit={() => setSearch({ ...search, edit: 1 })}
-        // O modal "Adicionar tópicos" é a FU11: abre por `?add=1`.
         onAddTopics={() => setSearch({ ...search, add: 1 })}
         adding={create.isPending}
         onQuickAdd={async (title) => {
@@ -71,6 +72,31 @@ function Module() {
           'A linha do tempo do módulo está sendo construída.',
         )}
         notes={placeholder('As anotações do módulo estão sendo construídas.')}
+      />
+      <AddTopicsDialog
+        open={!!search.add}
+        onOpenChange={(o) => {
+          setAddError(null)
+          if (!o) setSearch({ ...search, add: undefined })
+        }}
+        moduleTitle={data.title}
+        roadmapName={data.roadmapName}
+        existingTitles={data.topics.map((t) => t.title)}
+        saving={create.isPending}
+        error={addError}
+        onSave={(topics) =>
+          create.mutate(topics, {
+            onSuccess: () => {
+              toast.success(
+                topics.length === 1
+                  ? 'Tópico adicionado'
+                  : `${topics.length} tópicos adicionados`,
+              )
+              setSearch({ ...search, add: undefined })
+            },
+            onError: (e) => setAddError(errorMessage(e)),
+          })
+        }
       />
       <EditModuleDialog
         key={data.updatedAt}
