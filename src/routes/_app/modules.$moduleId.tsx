@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { NotesPanel } from '@/components/notes/NotesPanel'
+import { LazyNotesPanel } from '@/components/notes/LazyNotesPanel'
 import { AddTopicsDialog } from '@/features/module/AddTopicsDialog'
 import { EditModuleDialog } from '@/features/module/EditModuleDialog'
 import { ModulePage } from '@/features/module/ModulePage'
@@ -65,7 +65,7 @@ function Module() {
           }
         }}
         timeline={<ModuleTimeline moduleId={id} />}
-        notes={<NotesPanel owner={{ kind: 'module', id }} />}
+        notes={<LazyNotesPanel owner={{ kind: 'module', id }} />}
       />
       <AddTopicsDialog
         open={!!search.add}

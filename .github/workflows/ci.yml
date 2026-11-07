@@ -33,6 +33,8 @@ jobs:
         run: git diff --exit-code -- src/lib/api/schema.d.ts src/routeTree.gen.ts
       - name: Build
         run: pnpm build
+      - name: Orçamento de bundle
+        run: pnpm size
 
   storybook:
     name: Storybook

@@ -1,14 +1,20 @@
 import { Link } from '@tanstack/react-router'
+import { Suspense, lazy } from 'react'
+import { Skeleton } from '@/components/ui/skeleton'
 import { CalendarClock, List, Network, Plus } from 'lucide-react'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 import type { Schemas } from '@/lib/api/client'
 import { cn } from '@/lib/utils'
-import { RoadmapMap } from './RoadmapMap'
 
 type Roadmap = Schemas['RoadmapDetail']
 
 export type RoadmapView = 'map' | 'list'
 export type RoadmapTab = 'roadmap' | 'progress'
+
+// O mapa (layout e SVG) carrega só quando a visão Mapa aparece.
+const RoadmapMap = lazy(() =>
+  import('./RoadmapMap').then((m) => ({ default: m.RoadmapMap })),
+)
 
 export type RoadmapPageProps = {
   roadmap: Roadmap
@@ -235,7 +241,15 @@ export function RoadmapPage({
           ) : view === 'list' ? (
             list
           ) : (
-            <RoadmapMap roadmap={r} onChoose={onChoose} choosing={choosing} />
+            <Suspense
+              fallback={
+                <div role="status" aria-label="Carregando o mapa">
+                  <Skeleton className="h-[520px] w-full rounded-2xl" />
+                </div>
+              }
+            >
+              <RoadmapMap roadmap={r} onChoose={onChoose} choosing={choosing} />
+            </Suspense>
           )}
         </section>
       )}
