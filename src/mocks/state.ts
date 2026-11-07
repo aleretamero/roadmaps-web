@@ -2,6 +2,7 @@
  * Estado do mock: o banco em memória, o cenário escolhido e a persistência opcional.
  */
 import { createDb } from './db'
+import { addDays, isLate, isStalled, today } from './domain'
 import type { Db } from './db'
 
 export const SCENARIOS = [
@@ -12,6 +13,8 @@ export const SCENARIOS = [
   'com-drive',
   'erro-500',
   'lento',
+  'sem-agenda-hoje',
+  'em-dia',
 ] as const
 export type Scenario = (typeof SCENARIOS)[number]
 
@@ -32,6 +35,28 @@ function build(s: Scenario): Db {
       rootFolderName: 'Roadmaps',
       connectedAt: new Date().toISOString(),
     }
+  }
+  if (s === 'sem-agenda-hoje') {
+    // Dia sem tópico: nada agendado para hoje.
+    const t = today()
+    fresh.schedule = fresh.schedule.filter((e) => e.date !== t)
+  }
+  if (s === 'em-dia') {
+    // Tudo em dia: sem datas perdidas nem tópicos parados.
+    const t = today()
+    const late = new Set(
+      fresh.topics.filter((tp) => isLate(fresh, tp)).map((tp) => tp.id),
+    )
+    fresh.schedule = fresh.schedule.filter(
+      (e) => !(late.has(e.topicId) && e.date < t),
+    )
+    for (const tp of fresh.topics.filter((x) => isStalled(fresh, x)))
+      fresh.schedule.push({
+        id: ++fresh.seq,
+        topicId: tp.id,
+        date: addDays(t, 2),
+        source: 'manual',
+      })
   }
   return fresh
 }

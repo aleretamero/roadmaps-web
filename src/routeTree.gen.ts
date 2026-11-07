@@ -17,7 +17,9 @@ import { Route as AppScheduleRouteImport } from './routes/_app/schedule'
 import { Route as DevComponentsRouteImport } from './routes/dev.components'
 import { Route as DevTokensRouteImport } from './routes/dev.tokens'
 import { Route as AppRoadmapsIndexRouteImport } from './routes/_app/roadmaps.index'
+import { Route as AppRoadmapsRoadmapIdRouteImport } from './routes/_app/roadmaps.$roadmapId'
 import { Route as AppSettingsSectionRouteImport } from './routes/_app/settings.$section'
+import { Route as AppTopicsTopicIdRouteImport } from './routes/_app/topics.$topicId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -58,9 +60,19 @@ const AppRoadmapsIndexRoute = AppRoadmapsIndexRouteImport.update({
   path: '/roadmaps/',
   getParentRoute: () => AppRoute,
 } as any)
+const AppRoadmapsRoadmapIdRoute = AppRoadmapsRoadmapIdRouteImport.update({
+  id: '/roadmaps/$roadmapId',
+  path: '/roadmaps/$roadmapId',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppSettingsSectionRoute = AppSettingsSectionRouteImport.update({
   id: '/settings/$section',
   path: '/settings/$section',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTopicsTopicIdRoute = AppTopicsTopicIdRouteImport.update({
+  id: '/topics/$topicId',
+  path: '/topics/$topicId',
   getParentRoute: () => AppRoute,
 } as any)
 
@@ -71,7 +83,9 @@ export interface FileRoutesByFullPath {
   '/schedule': typeof AppScheduleRoute
   '/dev/components': typeof DevComponentsRoute
   '/dev/tokens': typeof DevTokensRoute
+  '/roadmaps/$roadmapId': typeof AppRoadmapsRoadmapIdRoute
   '/settings/$section': typeof AppSettingsSectionRoute
+  '/topics/$topicId': typeof AppTopicsTopicIdRoute
   '/roadmaps/': typeof AppRoadmapsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -81,7 +95,9 @@ export interface FileRoutesByTo {
   '/schedule': typeof AppScheduleRoute
   '/dev/components': typeof DevComponentsRoute
   '/dev/tokens': typeof DevTokensRoute
+  '/roadmaps/$roadmapId': typeof AppRoadmapsRoadmapIdRoute
   '/settings/$section': typeof AppSettingsSectionRoute
+  '/topics/$topicId': typeof AppTopicsTopicIdRoute
   '/roadmaps': typeof AppRoadmapsIndexRoute
 }
 export interface FileRoutesById {
@@ -93,7 +109,9 @@ export interface FileRoutesById {
   '/_app/schedule': typeof AppScheduleRoute
   '/dev/components': typeof DevComponentsRoute
   '/dev/tokens': typeof DevTokensRoute
+  '/_app/roadmaps/$roadmapId': typeof AppRoadmapsRoadmapIdRoute
   '/_app/settings/$section': typeof AppSettingsSectionRoute
+  '/_app/topics/$topicId': typeof AppTopicsTopicIdRoute
   '/_app/roadmaps/': typeof AppRoadmapsIndexRoute
 }
 export interface FileRouteTypes {
@@ -105,7 +123,9 @@ export interface FileRouteTypes {
     | '/schedule'
     | '/dev/components'
     | '/dev/tokens'
+    | '/roadmaps/$roadmapId'
     | '/settings/$section'
+    | '/topics/$topicId'
     | '/roadmaps/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -115,7 +135,9 @@ export interface FileRouteTypes {
     | '/schedule'
     | '/dev/components'
     | '/dev/tokens'
+    | '/roadmaps/$roadmapId'
     | '/settings/$section'
+    | '/topics/$topicId'
     | '/roadmaps'
   id:
     | '__root__'
@@ -126,7 +148,9 @@ export interface FileRouteTypes {
     | '/_app/schedule'
     | '/dev/components'
     | '/dev/tokens'
+    | '/_app/roadmaps/$roadmapId'
     | '/_app/settings/$section'
+    | '/_app/topics/$topicId'
     | '/_app/roadmaps/'
   fileRoutesById: FileRoutesById
 }
@@ -196,11 +220,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRoadmapsIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/roadmaps/$roadmapId': {
+      id: '/_app/roadmaps/$roadmapId'
+      path: '/roadmaps/$roadmapId'
+      fullPath: '/roadmaps/$roadmapId'
+      preLoaderRoute: typeof AppRoadmapsRoadmapIdRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/settings/$section': {
       id: '/_app/settings/$section'
       path: '/settings/$section'
       fullPath: '/settings/$section'
       preLoaderRoute: typeof AppSettingsSectionRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/topics/$topicId': {
+      id: '/_app/topics/$topicId'
+      path: '/topics/$topicId'
+      fullPath: '/topics/$topicId'
+      preLoaderRoute: typeof AppTopicsTopicIdRouteImport
       parentRoute: typeof AppRoute
     }
   }
@@ -209,14 +247,18 @@ declare module '@tanstack/react-router' {
 interface AppRouteChildren {
   AppDashboardRoute: typeof AppDashboardRoute
   AppScheduleRoute: typeof AppScheduleRoute
+  AppRoadmapsRoadmapIdRoute: typeof AppRoadmapsRoadmapIdRoute
   AppSettingsSectionRoute: typeof AppSettingsSectionRoute
+  AppTopicsTopicIdRoute: typeof AppTopicsTopicIdRoute
   AppRoadmapsIndexRoute: typeof AppRoadmapsIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppDashboardRoute: AppDashboardRoute,
   AppScheduleRoute: AppScheduleRoute,
+  AppRoadmapsRoadmapIdRoute: AppRoadmapsRoadmapIdRoute,
   AppSettingsSectionRoute: AppSettingsSectionRoute,
+  AppTopicsTopicIdRoute: AppTopicsTopicIdRoute,
   AppRoadmapsIndexRoute: AppRoadmapsIndexRoute,
 }
 

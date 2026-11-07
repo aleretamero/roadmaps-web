@@ -266,7 +266,35 @@ export function roadmapSummary(
     topicsCount: topics.length,
     startedOn,
     updatedAt: r.updatedAt,
+    stageCounts: stageCounts(db, mods),
+    currentModules: mods
+      .filter((m) => {
+        if (isNotChosen(db, m)) return false
+        const p = moduleProgress(db, m)
+        return !!moduleStartedOn(db, m.id) && p.completed < p.total
+      })
+      .map((m) => m.title),
+    nextTopicDate: next ? nextScheduled(db, next.id) : null,
   }
+}
+
+function stageCounts(db: Db, mods: Array<DbModule>): Schemas['StageCounts'] {
+  const counts = { planned: 0, studying: 0, practicing: 0, completed: 0 }
+  for (const m of mods)
+    for (const t of topicsOf(db, m.id))
+      if (countsForProgress(db, m, t)) counts[t.stage] += 1
+  return counts
+}
+
+/** Próxima data agendada (de hoje em diante). */
+function nextScheduled(db: Db, topicId: number): string | null {
+  const t = today()
+  return (
+    db.schedule
+      .filter((s) => s.topicId === topicId && s.date >= t)
+      .map((s) => s.date)
+      .sort()[0] ?? null
+  )
 }
 
 export function roadmapDetail(
@@ -474,12 +502,49 @@ export function streak(db: Db): { current: number; best: number } {
   return { current, best }
 }
 
-export function dashboardTopic(db: Db, t: DbTopic): Schemas['DashboardTopic'] {
+const ACTIONS = ['studied', 'practiced', 'completed'] as const
+type Action = (typeof ACTIONS)[number]
+
+function actionsOf(sessions: Array<DbSession>): Array<Action> {
+  return ACTIONS.filter((a) => sessions.some((s) => s[a]))
+}
+
+export function lastSessionOn(db: Db, topicId: number): string | null {
+  return (
+    db.sessions
+      .filter((s) => s.topicId === topicId)
+      .map((s) => s.day)
+      .sort()
+      .at(-1) ?? null
+  )
+}
+
+const STALL_DAYS = 5
+
+/** Em andamento sem sessão há 5+ dias e sem nada agendado de hoje em diante. */
+export function isStalled(db: Db, t: DbTopic): boolean {
+  if (t.stage !== 'studying' && t.stage !== 'practicing') return false
+  const last = lastSessionOn(db, t.id) ?? t.startedOn
+  if (!last || nextScheduled(db, t.id)) return false
+  return last <= addDays(today(), -STALL_DAYS)
+}
+
+export function dashboardTopic(
+  db: Db,
+  t: DbTopic,
+  attentionReason: 'late' | 'stalled' | null = null,
+): Schemas['DashboardTopic'] {
+  const day = today()
   return {
     topic: topicRef(db, t),
     stage: t.stage,
     isLate: isLate(db, t),
     dueDate: dueDate(db, t.id),
+    lastSessionOn: lastSessionOn(db, t.id),
+    todayActions: actionsOf(
+      db.sessions.filter((s) => s.topicId === t.id && s.day === day),
+    ),
+    attentionReason,
   }
 }
 
@@ -518,22 +583,68 @@ export function dashboard(db: Db): Schemas['Dashboard'] {
             : study
               ? 'missed'
               : 'rest'
-    return { date, isStudyDay: study, sessionsCount, plannedCount, status }
+    const byTopic = new Map<number, Array<DbSession>>()
+    for (const s of db.sessions.filter((x) => x.day === date))
+      byTopic.set(s.topicId, [...(byTopic.get(s.topicId) ?? []), s])
+    const workedActions = [...byTopic.values()].map(
+      (ss) => actionsOf(ss).at(-1) ?? 'studied',
+    )
+    return {
+      date,
+      isStudyDay: study,
+      sessionsCount,
+      plannedCount,
+      workedActions,
+      status,
+    }
   })
   const weekSessions = db.sessions.filter(
     (s) => s.day >= start && s.day <= addDays(start, 6),
   )
+  const lastWeekSessions = db.sessions.filter(
+    (s) => s.day >= addDays(start, -7) && s.day <= addDays(start, -1),
+  )
+  const countedTopics = topics.filter((tp) => {
+    const m = moduleOf(db, tp)
+    return countsForProgress(db, m, tp)
+  })
+  const inProgress = topics.filter(
+    (tp) => tp.stage === 'studying' || tp.stage === 'practicing',
+  )
+  // Hoje: agendados (não concluídos) + os que tiveram sessão hoje.
+  const workedToday = topics.filter((tp) =>
+    db.sessions.some((s) => s.topicId === tp.id && s.day === t),
+  )
+  const todayTopics = [
+    ...scheduledOn(t).filter((tp) => tp.stage !== 'completed'),
+    ...workedToday,
+  ].filter((tp, i, all) => all.findIndex((x) => x.id === tp.id) === i)
+  const resume = inProgress
+    .map((tp) => ({ tp, last: lastSessionOn(db, tp.id) ?? tp.startedOn ?? '' }))
+    .sort((a, b) => (a.last < b.last ? 1 : -1))[0]
+  const late = topics.filter((tp) => isLate(db, tp))
+  const stalled = topics.filter((tp) => isStalled(db, tp))
   return {
-    today: scheduledOn(t)
-      .filter((tp) => tp.stage !== 'completed')
-      .map((tp) => dashboardTopic(db, tp)),
+    today: todayTopics.map((tp) => dashboardTopic(db, tp)),
     week,
     streak: streak(db),
     weekStats: {
       sessions: weekSessions.length,
       studyDays: new Set(weekSessions.map((s) => s.day)).size,
       topicsCompleted: weekSessions.filter((s) => s.completed).length,
+      topicsWorked: new Set(
+        weekSessions.filter((s) => s.day <= t).map((s) => s.topicId),
+      ).size,
+      topicsWorkedLastWeek: new Set(lastWeekSessions.map((s) => s.topicId))
+        .size,
     },
+    topics: {
+      inProgress: inProgress.length,
+      stalled: stalled.length,
+      completed: countedTopics.filter((tp) => tp.stage === 'completed').length,
+      required: countedTopics.length,
+    },
+    resume: resume ? dashboardTopic(db, resume.tp) : null,
     roadmaps: db.roadmaps
       .filter((r) => !r.archivedAt)
       .map((r) => roadmapSummary(db, r.id)),
@@ -546,9 +657,10 @@ export function dashboard(db: Db): Schemas['Dashboard'] {
           .map((tp) => dashboardTopic(db, tp)),
       }
     }),
-    attention: topics
-      .filter((tp) => isLate(db, tp))
-      .map((tp) => dashboardTopic(db, tp)),
+    attention: [
+      ...late.map((tp) => dashboardTopic(db, tp, 'late')),
+      ...stalled.map((tp) => dashboardTopic(db, tp, 'stalled')),
+    ],
   }
 }
 

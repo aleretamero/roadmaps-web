@@ -27,7 +27,7 @@ Em desenvolvimento (`.env.development` tem `VITE_API_MOCK=true`), no Storybook e
 
 - **Banco em memória** (`src/mocks/db.ts`): os dados de exemplo do protótipo (Marina Costa; roadmaps Backend com .NET, Frontend, Algoritmos e System Design arquivado), com datas relativas a hoje e meses de sessões para o mapa de calor.
 - **Regras do backend** (`src/mocks/domain.ts`): etapa só avança por sessão, tópico novo no fim, progresso sem opcionais e sem alternativas não escolhidas, data prevista e atraso, sequência, agendamento automático (1 tópico por dia de estudo), `drive_not_connected` sem Drive, ciclo de dependência recusado, `If-Match` → 412.
-- **Cenários**: `padrao`, `vazio` (usuário novo), `deslogado` (401), `sem-drive`, `com-drive`, `erro-500`, `lento` (1,5 s por resposta).
+- **Cenários**: `padrao`, `vazio` (usuário novo), `deslogado` (401), `sem-drive`, `com-drive`, `erro-500`, `lento` (1,5 s por resposta), `sem-agenda-hoje` (nada agendado para hoje), `em-dia` (sem datas perdidas nem tópicos parados).
   - No app: `?mock=<cenário>` na URL (fica na aba até trocar).
   - No Storybook: barra de ferramentas › Cenário, ou `parameters: { scenario: 'vazio' }` na story.
   - Nos testes: `setScenario('vazio')` de `src/mocks`.

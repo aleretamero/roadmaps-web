@@ -1860,6 +1860,30 @@ components:
         - studying
         - practicing
         - completed
+    SessionAction:
+      type: string
+      description: O que foi feito numa sessão (estudei, pratiquei, concluí).
+      enum:
+        - studied
+        - practiced
+        - completed
+    StageCounts:
+      type: object
+      description: Tópicos que contam no progresso, por etapa.
+      properties:
+        planned:
+          type: integer
+        studying:
+          type: integer
+        practicing:
+          type: integer
+        completed:
+          type: integer
+      required:
+        - planned
+        - studying
+        - practicing
+        - completed
     ModuleKind:
       type: string
       enum:
@@ -2182,6 +2206,18 @@ components:
             - *id011
             - type: 'null'
         updatedAt: *id013
+        stageCounts:
+          $ref: '#/components/schemas/StageCounts'
+        currentModules:
+          type: array
+          description: Módulos começados e ainda não concluídos, na ordem do roadmap.
+          items:
+            type: string
+        nextTopicDate:
+          description: Próxima data agendada do próximo tópico (null sem agendamento).
+          anyOf:
+            - *id011
+            - type: 'null'
       required:
         - id
         - name
@@ -2193,6 +2229,9 @@ components:
         - topicsCount
         - startedOn
         - updatedAt
+        - stageCounts
+        - currentModules
+        - nextTopicDate
     RoadmapDetail:
       type: object
       properties:
@@ -2705,11 +2744,31 @@ components:
           anyOf:
             - *id011
             - type: 'null'
+        lastSessionOn:
+          anyOf:
+            - *id011
+            - type: 'null'
+        todayActions:
+          type: array
+          description: O que foi registrado hoje neste tópico (vazio se nada).
+          items:
+            $ref: '#/components/schemas/SessionAction'
+        attentionReason:
+          description: Por que está em "Precisa de atenção" (null fora dessa lista).
+          anyOf:
+            - type: string
+              enum:
+                - late
+                - stalled
+            - type: 'null'
       required:
         - topic
         - stage
         - isLate
         - dueDate
+        - lastSessionOn
+        - todayActions
+        - attentionReason
     Dashboard:
       type: object
       properties:
@@ -2728,6 +2787,11 @@ components:
                 type: integer
               plannedCount:
                 type: integer
+              workedActions:
+                type: array
+                description: Uma entrada por tópico trabalhado no dia, com o que de mais avançado foi feito nele.
+                items:
+                  $ref: '#/components/schemas/SessionAction'
               status:
                 type: string
                 enum:
@@ -2741,6 +2805,7 @@ components:
               - isStudyDay
               - sessionsCount
               - plannedCount
+              - workedActions
               - status
         streak:
           type: object
@@ -2761,10 +2826,42 @@ components:
               type: integer
             topicsCompleted:
               type: integer
+            topicsWorked:
+              type: integer
+              description: Tópicos diferentes com sessão nesta semana (domingo a hoje).
+            topicsWorkedLastWeek:
+              type: integer
           required:
             - sessions
             - studyDays
             - topicsCompleted
+            - topicsWorked
+            - topicsWorkedLastWeek
+        topics:
+          type: object
+          description: Números dos tópicos dos roadmaps ativos.
+          properties:
+            inProgress:
+              type: integer
+              description: Estudando ou praticando.
+            stalled:
+              type: integer
+              description: Em andamento sem sessão há 5 dias ou mais e sem data futura.
+            completed:
+              type: integer
+            required:
+              type: integer
+              description: Tópicos que contam no progresso.
+          required:
+            - inProgress
+            - stalled
+            - completed
+            - required
+        resume:
+          description: Tópico em andamento trabalhado por último (para "Continuar" quando hoje está vazio).
+          anyOf:
+            - $ref: '#/components/schemas/DashboardTopic'
+            - type: 'null'
         roadmaps:
           type: array
           items:
@@ -2791,6 +2888,8 @@ components:
         - week
         - streak
         - weekStats
+        - topics
+        - resume
         - roadmaps
         - next7Days
         - attention
