@@ -8,6 +8,7 @@ import { useSuspenseQuery } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { toast } from 'sonner'
 import { AppHeader } from '@/features/app-shell/AppHeader'
+import { LogSessionProvider } from '@/components/LogSession'
 import { PagePending, RouteError } from '@/components/RouteStates'
 import { isApiError } from '@/lib/api/errors'
 import { meQuery, useLogout } from '@/lib/api/queries'
@@ -39,9 +40,11 @@ export const Route = createFileRoute('/_app')({
 
 function AppLayout() {
   return (
-    <Shell>
-      <Outlet />
-    </Shell>
+    <LogSessionProvider>
+      <Shell>
+        <Outlet />
+      </Shell>
+    </LogSessionProvider>
   )
 }
 

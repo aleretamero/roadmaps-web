@@ -5,6 +5,7 @@ import type { Schemas } from '@/lib/api/client'
 import { formatShort, relativeDay, todayISO } from '@/lib/date'
 import { stageLabel } from '@/lib/stage'
 import { cn } from '@/lib/utils'
+import { useLogSession } from '@/components/LogSession'
 
 type Progress = Schemas['RoadmapProgress']
 type ModuleNode = Schemas['ModuleNode']
@@ -65,6 +66,7 @@ function ModuleLink({
 }
 
 function ActiveModuleCard({ m, today }: { m: ModuleNode; today: string }) {
+  const log = useLogSession()
   const req = required(m)
   const done = req.filter((t) => t.stage === 'completed').length
   const pending = [...m.topics]
@@ -129,16 +131,15 @@ function ActiveModuleCard({ m, today }: { m: ModuleNode; today: string }) {
                 </span>
               </Link>
               <StageChip stage={t.stage} />
-              <Link
-                to="/topics/$topicId"
-                params={{ topicId: String(t.id) }}
-                search={{ log: 1 }}
+              <button
+                type="button"
+                onClick={() => log(t.id)}
                 aria-label={`Registrar sessão em ${t.title}`}
                 className="inline-flex h-8 flex-none items-center gap-1.5 rounded-lg border border-line-strong bg-surface px-2.5 text-[13px] font-medium hover:bg-canvas"
               >
                 <Plus className="size-3.5" aria-hidden="true" />
                 Registrar
-              </Link>
+              </button>
             </li>
           )
         })}

@@ -178,8 +178,8 @@ export const Progresso: StoryObj<typeof ProgressTab> = {
       c.getByRole('img', { name: /^Tópicos por etapa: Concluído 1/ }),
     ).toBeVisible()
     await expect(
-      c.getByRole('link', { name: 'Registrar sessão em Promises' }),
-    ).toHaveAttribute('href', expect.stringMatching(/\?log=1$/))
+      c.getByRole('button', { name: 'Registrar sessão em Promises' }),
+    ).toBeVisible()
     await expect(
       c.getByRole('region', { name: 'Caminhos não escolhidos' }),
     ).toBeVisible()

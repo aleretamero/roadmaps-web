@@ -7,6 +7,7 @@ import type { QueryClient } from '@tanstack/react-query'
 import { api, unwrap } from './client'
 import type { Schemas } from './client'
 import { keys } from './keys'
+import { stageAfter } from '@/lib/stage'
 
 /*
  * Leituras: `queryOptions` para usar tanto em `useQuery`/`useSuspenseQuery`
@@ -169,7 +170,42 @@ export function useRegisterSession(topicId: number) {
   return useMutation({
     mutationFn: (body: Schemas['RegisterSessionRequest']) =>
       unwrap(api.POST('/topics/{id}/sessions', { ...id(topicId), body })),
-    onSuccess: () => invalidateStudy(qc, topicId),
+    // Otimista: a etapa nova aparece no tópico e no módulo antes da resposta.
+    onMutate: async (body) => {
+      await qc.cancelQueries({ queryKey: keys.topics.detail(topicId) })
+      await qc.cancelQueries({ queryKey: keys.modules.all })
+      const actions = (['studied', 'practiced', 'completed'] as const).filter(
+        (a) => body[a],
+      )
+      const topic = qc.getQueryData<Schemas['TopicDetail']>(
+        keys.topics.detail(topicId),
+      )
+      const modules = qc.getQueriesData<Schemas['ModuleDetail']>({
+        queryKey: keys.modules.all,
+      })
+      if (topic)
+        qc.setQueryData(keys.topics.detail(topicId), {
+          ...topic,
+          stage: stageAfter(topic.stage, actions),
+        })
+      for (const [key, m] of modules) {
+        if (!m || !Array.isArray(m.topics)) continue
+        qc.setQueryData(key, {
+          ...m,
+          topics: m.topics.map((t) =>
+            t.id === topicId
+              ? { ...t, stage: stageAfter(t.stage, actions) }
+              : t,
+          ),
+        })
+      }
+      return { topic, modules }
+    },
+    onError: (_e, _body, ctx) => {
+      if (ctx?.topic) qc.setQueryData(keys.topics.detail(topicId), ctx.topic)
+      for (const [key, m] of ctx?.modules ?? []) qc.setQueryData(key, m)
+    },
+    onSettled: () => invalidateStudy(qc, topicId),
   })
 }
 

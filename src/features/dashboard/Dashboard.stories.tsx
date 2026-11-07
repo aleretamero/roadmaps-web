@@ -61,7 +61,7 @@ export const DiaSemTopico: Story = {
   play: async ({ canvasElement }) => {
     const c = within(canvasElement)
     await expect(c.getByText('Nada agendado para hoje.')).toBeVisible()
-    await expect(c.getByRole('link', { name: /^Continuar “/ })).toBeVisible()
+    await expect(c.getByRole('button', { name: /^Continuar “/ })).toBeVisible()
   },
 }
 export const TudoEmDia: Story = {

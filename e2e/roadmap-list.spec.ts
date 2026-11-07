@@ -88,7 +88,7 @@ test.describe('lista do roadmap', () => {
 
     await page.getByRole('button', { name: 'Ações de Índices' }).click()
     await page.getByRole('menuitem', { name: 'Registrar sessão' }).click()
-    await expect(page).toHaveURL(/\/topics\/\d+\?log=1$/)
+    await expect(page.getByRole('dialog', { name: 'Índices' })).toBeVisible()
   })
 
   test('clique no nome abre o tópico e recolher esconde a lista', async ({

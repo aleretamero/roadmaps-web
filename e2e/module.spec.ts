@@ -25,8 +25,10 @@ test.describe('detalhe do módulo', () => {
 
     await page.getByRole('button', { name: 'Ações de Índices' }).click()
     await page.getByRole('menuitem', { name: 'Registrar sessão' }).click()
-    await expect(page).toHaveURL(/\/topics\/\d+\?log=1$/)
-    await page.goBack()
+    await expect(page.getByRole('dialog', { name: 'Índices' })).toBeVisible()
+    await expect(page).toHaveURL(moduleUrl)
+    await page.keyboard.press('Escape')
+    await expect(page.getByRole('dialog')).toBeHidden()
 
     // clique no meio da linha (nos detalhes), fora do título: o link esticado
     // cobre a linha, então o clique cai nele (force: pula a checagem de alvo)
