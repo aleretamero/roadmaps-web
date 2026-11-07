@@ -20,6 +20,8 @@ export const meQuery = () =>
     queryKey: keys.me,
     queryFn: () => unwrap(api.GET('/me')),
     staleTime: 5 * 60_000,
+    // A guarda da rota `_app` trata o 401 do /me com o `redirect` certo.
+    meta: { handlesUnauthorized: true },
   })
 
 export const preferencesQuery = () =>
@@ -225,5 +227,14 @@ export function useUpdatePreferences() {
     mutationFn: (body: Schemas['Preferences']) =>
       unwrap(api.PUT('/me/preferences', { body })),
     onSuccess: (data) => qc.setQueryData(keys.preferences, data),
+  })
+}
+
+/** Encerra a sessão e limpa o cache (nada da conta fica na tela depois de sair). */
+export function useLogout() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: () => unwrap(api.POST('/auth/logout')),
+    onSuccess: () => qc.clear(),
   })
 }

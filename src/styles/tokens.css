@@ -59,6 +59,15 @@
   --color-heat-3: #3f8f58;
   --color-heat-4: #1e5a37;
 
+  /* Avatar da conta (iniciais) */
+  --color-avatar: #2b4a35;
+  --color-avatar-fg: #ffffff;
+
+  /* Toast escuro de confirmação */
+  --color-toast: #15171a;
+  --color-toast-fg: #ffffff;
+  --color-toast-icon: #8fd3a4;
+
   /* Raios */
   --radius-xs: 3px;
   --radius-sm: 6px;

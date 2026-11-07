@@ -2,6 +2,7 @@ import { createRouter as createTanStackRouter } from '@tanstack/react-router'
 import { setupRouterSsrQueryIntegration } from '@tanstack/react-router-ssr-query'
 import { routeTree } from './routeTree.gen'
 import { createQueryClient } from '@/lib/api/query-client'
+import { NotFound, PagePending, RouteError } from '@/components/RouteStates'
 
 export function getRouter() {
   const queryClient = createQueryClient({
@@ -21,6 +22,10 @@ export function getRouter() {
     defaultPreload: 'intent',
     // O TanStack Query cuida do cache; o router sempre pergunta a ele.
     defaultPreloadStaleTime: 0,
+    defaultPendingComponent: PagePending,
+    defaultPendingMs: 300,
+    defaultErrorComponent: RouteError,
+    defaultNotFoundComponent: NotFound,
   })
 
   setupRouterSsrQueryIntegration({ router, queryClient })

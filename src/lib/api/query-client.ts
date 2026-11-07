@@ -18,7 +18,12 @@ export function createQueryClient({ onUnauthorized }: Options = {}) {
     if (error instanceof ApiError && error.status === 401) onUnauthorized?.()
   }
   return new QueryClient({
-    queryCache: new QueryCache({ onError: handle }),
+    queryCache: new QueryCache({
+      onError: (error, query) => {
+        if (query.meta?.handlesUnauthorized) return
+        handle(error)
+      },
+    }),
     mutationCache: new MutationCache({ onError: handle }),
     defaultOptions: {
       queries: { staleTime: 30_000, retry: shouldRetry },
