@@ -1,0 +1,6 @@
+pnpm-lock.yaml
+src/routeTree.gen.ts
+dist
+.output
+.tanstack
+coverage
