@@ -89,4 +89,13 @@
   --shadow-hero: 0 40px 100px rgb(21 23 26 / 0.12);
   --shadow-cta: 0 8px 24px rgb(21 23 26 / 0.18);
   --shadow-card-open: 0 10px 30px rgb(21 23 26 / 0.06);
+
+  /* Bloco de código das anotações (fundo escuro, realce do lowlight). */
+  --color-code-bg: #15171a;
+  --color-code-fg: #e8eae5;
+  --color-code-muted: #9aa096;
+  --color-code-keyword: #f0a35e;
+  --color-code-string: #9fd39a;
+  --color-code-type: #7fb4ff;
+  --color-code-number: #e7c66b;
 }

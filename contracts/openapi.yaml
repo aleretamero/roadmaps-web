@@ -3106,6 +3106,9 @@ components:
           anyOf:
             - *id013
             - type: 'null'
+        version:
+          type: integer
+          description: 'Versão da anotação (RowVersion); mande "<version>" em If-Match no PATCH. É o mesmo valor do ETag.'
       required:
         - id
         - topicId
@@ -3113,6 +3116,7 @@ components:
         - content
         - createdAt
         - editedAt
+        - version
     NoteRequest:
       type: object
       properties:

@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { NotesPanel } from '@/components/notes/NotesPanel'
 import { AddTopicsDialog } from '@/features/module/AddTopicsDialog'
 import { EditModuleDialog } from '@/features/module/EditModuleDialog'
 import { ModulePage } from '@/features/module/ModulePage'
@@ -14,12 +15,6 @@ import {
 } from '@/lib/api/queries'
 
 type ModuleSearch = { tab?: 'timeline' | 'notes'; add?: 1; edit?: 1 }
-
-const placeholder = (text: string) => (
-  <p className="rounded-2xl border border-dashed border-line-control bg-surface p-8 text-center text-ink-muted">
-    {text}
-  </p>
-)
 
 export const Route = createFileRoute('/_app/modules/$moduleId')({
   validateSearch: (search: Record<string, unknown>): ModuleSearch => ({
@@ -70,7 +65,7 @@ function Module() {
           }
         }}
         timeline={<ModuleTimeline moduleId={id} />}
-        notes={placeholder('As anotações do módulo estão sendo construídas.')}
+        notes={<NotesPanel owner={{ kind: 'module', id }} />}
       />
       <AddTopicsDialog
         open={!!search.add}

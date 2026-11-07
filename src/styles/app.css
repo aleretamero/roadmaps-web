@@ -64,3 +64,97 @@
   );
   background-size: 22px 22px;
 }
+
+/* Conteúdo das anotações (editor e leitura): Markdown renderizado pelo Tiptap. */
+.note-content {
+  overflow-wrap: anywhere;
+  & > * + * {
+    margin-top: 0.75rem;
+  }
+  & h1 {
+    font-size: 1.75rem;
+    line-height: 1.2;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  & h2 {
+    font-size: 1.35rem;
+    line-height: 1.25;
+    font-weight: 600;
+  }
+  & h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+  }
+  & ul {
+    list-style: disc;
+    padding-left: 1.4rem;
+  }
+  & ol {
+    list-style: decimal;
+    padding-left: 1.4rem;
+  }
+  & li > p {
+    margin: 0;
+  }
+  & blockquote {
+    border-left: 3px solid var(--color-line-control);
+    padding-left: 0.9rem;
+    color: var(--color-ink-muted);
+  }
+  & a {
+    color: var(--color-link);
+    text-decoration: underline;
+  }
+  & hr {
+    border-color: var(--color-line);
+  }
+  & :not(pre) > code {
+    border-radius: 4px;
+    background: var(--color-surface-sunken);
+    padding: 0.1em 0.35em;
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+  }
+  & pre {
+    overflow-x: auto;
+    border-radius: 10px;
+    background: var(--color-code-bg);
+    padding: 0.9rem 1rem;
+    color: var(--color-code-fg);
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    line-height: 1.6;
+  }
+  & .hljs-keyword,
+  & .hljs-built_in,
+  & .hljs-selector-tag {
+    color: var(--color-code-keyword);
+  }
+  & .hljs-string,
+  & .hljs-attr,
+  & .hljs-symbol {
+    color: var(--color-code-string);
+  }
+  & .hljs-title,
+  & .hljs-type,
+  & .hljs-class {
+    color: var(--color-code-type);
+  }
+  & .hljs-number,
+  & .hljs-literal {
+    color: var(--color-code-number);
+  }
+  & .hljs-comment,
+  & .hljs-meta {
+    color: var(--color-code-muted);
+    font-style: italic;
+  }
+  & p.is-editor-empty:first-child::before {
+    content: attr(data-placeholder);
+    float: left;
+    height: 0;
+    color: var(--color-ink-soft);
+    pointer-events: none;
+  }
+}
