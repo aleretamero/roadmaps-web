@@ -10,6 +10,8 @@ export type Scenario =
   | 'com-drive'
   | 'erro-500'
   | 'lento'
+  | 'sem-agenda-hoje'
+  | 'em-dia'
 
 /** Hora fixa dos testes: sábado, 7 de novembro de 2026, 10h em São Paulo. */
 export const NOW = new Date('2026-11-07T10:00:00-03:00')

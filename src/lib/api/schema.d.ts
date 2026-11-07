@@ -946,6 +946,18 @@ export interface components {
         };
         /** @enum {string} */
         Stage: "planned" | "studying" | "practicing" | "completed";
+        /**
+         * @description O que foi feito numa sessão (estudei, pratiquei, concluí).
+         * @enum {string}
+         */
+        SessionAction: "studied" | "practiced" | "completed";
+        /** @description Tópicos que contam no progresso, por etapa. */
+        StageCounts: {
+            planned: number;
+            studying: number;
+            practicing: number;
+            completed: number;
+        };
         /** @enum {string} */
         ModuleKind: "required" | "optional" | "alternative";
         /** @enum {string} */
@@ -1061,6 +1073,11 @@ export interface components {
             startedOn: string | null;
             /** Format: date-time */
             updatedAt: string;
+            stageCounts: components["schemas"]["StageCounts"];
+            /** @description Módulos começados e ainda não concluídos, na ordem do roadmap. */
+            currentModules: string[];
+            /** @description Próxima data agendada do próximo tópico (null sem agendamento). */
+            nextTopicDate: string | null;
         };
         RoadmapDetail: {
             id: number;
@@ -1290,6 +1307,11 @@ export interface components {
             stage: components["schemas"]["Stage"];
             isLate: boolean;
             dueDate: string | null;
+            lastSessionOn: string | null;
+            /** @description O que foi registrado hoje neste tópico (vazio se nada). */
+            todayActions: components["schemas"]["SessionAction"][];
+            /** @description Por que está em "Precisa de atenção" (null fora dessa lista). */
+            attentionReason: ("late" | "stalled") | null;
         };
         Dashboard: {
             today: components["schemas"]["DashboardTopic"][];
@@ -1302,6 +1324,8 @@ export interface components {
                 isStudyDay: boolean;
                 sessionsCount: number;
                 plannedCount: number;
+                /** @description Uma entrada por tópico trabalhado no dia, com o que de mais avançado foi feito nele. */
+                workedActions: components["schemas"]["SessionAction"][];
                 /** @enum {string} */
                 status: "done" | "planned" | "missed" | "rest" | "future";
             }[];
@@ -1313,7 +1337,22 @@ export interface components {
                 sessions: number;
                 studyDays: number;
                 topicsCompleted: number;
+                /** @description Tópicos diferentes com sessão nesta semana (domingo a hoje). */
+                topicsWorked: number;
+                topicsWorkedLastWeek: number;
             };
+            /** @description Números dos tópicos dos roadmaps ativos. */
+            topics: {
+                /** @description Estudando ou praticando. */
+                inProgress: number;
+                /** @description Em andamento sem sessão há 5 dias ou mais e sem data futura. */
+                stalled: number;
+                completed: number;
+                /** @description Tópicos que contam no progresso. */
+                required: number;
+            };
+            /** @description Tópico em andamento trabalhado por último (para "Continuar" quando hoje está vazio). */
+            resume: components["schemas"]["DashboardTopic"] | null;
             roadmaps: components["schemas"]["RoadmapSummary"][];
             next7Days: {
                 /**
