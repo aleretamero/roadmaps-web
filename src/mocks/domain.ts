@@ -666,20 +666,25 @@ export function dashboard(db: Db): Schemas['Dashboard'] {
 
 export function activity(db: Db, weeks: number): Schemas['Activity'] {
   const t = today()
-  const start = addDays(t, -(weeks * 7 - 1))
+  // Semanas completas começando no domingo, como a grade do painel.
+  const weekStart = addDays(t, -parseISODate(t).getDay())
+  const start = addDays(weekStart, -(weeks - 1) * 7)
   const days: Schemas['Activity']['days'] = []
   for (let d = start; d <= t; d = addDays(d, 1)) {
     const ss = db.sessions.filter((s) => s.day === d)
+    const byTopic = new Map<number, Array<DbSession>>()
+    for (const s of ss)
+      byTopic.set(s.topicId, [...(byTopic.get(s.topicId) ?? []), s])
+    const entries = [...byTopic.entries()].map(([topicId, list]) => ({
+      topicId,
+      title: db.topics.find((tp) => tp.id === topicId)?.title ?? '',
+      actions: actionsOf(list),
+    }))
     days.push({
       date: d,
       count: ss.length,
-      topics: [
-        ...new Set(
-          ss.map(
-            (s) => db.topics.find((tp) => tp.id === s.topicId)?.title ?? '',
-          ),
-        ),
-      ],
+      topics: entries.map((e) => e.title),
+      entries,
     })
   }
   const inRange = db.sessions.filter((s) => s.day >= start && s.day <= t)

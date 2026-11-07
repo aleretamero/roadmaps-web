@@ -1366,14 +1366,22 @@ export interface components {
         };
         Activity: {
             weeks: number;
+            /** @description Um item por dia, do domingo de `weeks - 1` semanas atrás até hoje (semanas completas, começando no domingo). */
             days: {
                 /**
                  * Format: date
                  * @example 2026-11-07
                  */
                 date: string;
+                /** @description Sessões registradas no dia. */
                 count: number;
                 topics: string[];
+                /** @description Tópicos trabalhados no dia e o que foi feito em cada um. */
+                entries: {
+                    topicId: number;
+                    title: string;
+                    actions: components["schemas"]["SessionAction"][];
+                }[];
             }[];
             totals: {
                 studied: number;
