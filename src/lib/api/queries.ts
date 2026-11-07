@@ -445,6 +445,32 @@ export function useAddScheduleEntry(topicId: number) {
   })
 }
 
+/** Agendar qualquer tópico num dia (Agenda). */
+export function useScheduleTopic() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ topicId, date }: { topicId: number; date: string }) =>
+      unwrap(
+        api.POST('/topics/{id}/schedule-entries', {
+          ...id(topicId),
+          body: { date },
+        }),
+      ),
+    onSuccess: (_d, v) => invalidateStudy(qc, v.topicId),
+  })
+}
+
+export function useMoveScheduleEntry(topicId?: number) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ entryId, date }: { entryId: number; date: string }) =>
+      unwrap(
+        api.PATCH('/schedule-entries/{id}', { ...id(entryId), body: { date } }),
+      ),
+    onSuccess: () => invalidateStudy(qc, topicId),
+  })
+}
+
 export function useDeleteScheduleEntry(topicId?: number) {
   const qc = useQueryClient()
   return useMutation({

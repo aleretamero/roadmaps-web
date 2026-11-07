@@ -20,7 +20,8 @@ export type DatePickerProps = {
   /** Discreto quando vazio (aparece forte ao passar o mouse/focar). */
   quiet?: boolean
   className?: string
-  /** Último dia que dá para escolher (yyyy-mm-dd). */
+  /** Primeiro e último dia que dá para escolher (yyyy-mm-dd). */
+  min?: string
   max?: string
   /** Alinhamento do calendário em relação ao botão. */
   align?: 'start' | 'end'
@@ -36,6 +37,7 @@ export function DatePicker({
   placeholder = 'Data',
   quiet = false,
   className,
+  min,
   max,
   align = 'end',
   buttonClassName,
@@ -68,7 +70,10 @@ export function DatePicker({
             locale={ptBR}
             selected={selected}
             defaultMonth={selected}
-            disabled={max ? { after: parseISODate(max) } : undefined}
+            disabled={[
+              ...(min ? [{ before: parseISODate(min) }] : []),
+              ...(max ? [{ after: parseISODate(max) }] : []),
+            ]}
             onSelect={(d) => {
               onChange(d ? toISODate(d) : '')
               setOpen(false)

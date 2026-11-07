@@ -9,6 +9,7 @@ import { useEffect } from 'react'
 import { toast } from 'sonner'
 import { AppHeader } from '@/features/app-shell/AppHeader'
 import { LogSessionProvider } from '@/components/LogSession'
+import { RescheduleProvider } from '@/components/Reschedule'
 import { PagePending, RouteError } from '@/components/RouteStates'
 import { isApiError } from '@/lib/api/errors'
 import { meQuery, useLogout } from '@/lib/api/queries'
@@ -41,9 +42,11 @@ export const Route = createFileRoute('/_app')({
 function AppLayout() {
   return (
     <LogSessionProvider>
-      <Shell>
-        <Outlet />
-      </Shell>
+      <RescheduleProvider>
+        <Shell>
+          <Outlet />
+        </Shell>
+      </RescheduleProvider>
     </LogSessionProvider>
   )
 }
