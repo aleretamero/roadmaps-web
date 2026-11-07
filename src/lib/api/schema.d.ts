@@ -1293,6 +1293,10 @@ export interface components {
             startDate: string;
             includeOptional?: boolean;
             topicIds?: number[];
+            /** @description Dias da semana usados neste agendamento (padrão: os dias de estudo das preferências). */
+            studyDays?: components["schemas"]["Weekday"][];
+            /** @description Ao gravar, tira as datas futuras que os tópicos já tinham (manuais ou automáticas). Padrão false: só as automáticas são trocadas. */
+            replaceExisting?: boolean;
         };
         SchedulePreview: {
             items: {

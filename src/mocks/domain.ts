@@ -466,9 +466,14 @@ export function schedulePreview(
   const items: Schemas['SchedulePreview']['items'] = []
   const skipped: Schemas['SchedulePreview']['skipped'] = []
   let date = body.startDate
+  const days = body.studyDays?.length ? body.studyDays : null
+  const studyDay = (d: string) =>
+    days
+      ? days.includes(WEEKDAYS[parseISODate(d).getDay()]!)
+      : isStudyDay(db, d)
   const nextStudyDay = (from: string) => {
     let d = from
-    for (let i = 0; i < 14 && !isStudyDay(db, d); i++) d = addDays(d, 1)
+    for (let i = 0; i < 14 && !studyDay(d); i++) d = addDays(d, 1)
     return d
   }
   for (const m of orderedModules(db, roadmapId)) {
