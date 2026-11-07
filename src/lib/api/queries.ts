@@ -289,3 +289,23 @@ export function useImportIntoRoadmap(roadmapId: number) {
     onSuccess: () => invalidateStudy(qc),
   })
 }
+
+export function useChoosePath(roadmapId: number) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({
+      branchModuleId,
+      chosenModuleId,
+    }: {
+      branchModuleId: number
+      chosenModuleId: number
+    }) =>
+      unwrap(
+        api.PUT('/roadmaps/{id}/path-choices/{branchModuleId}', {
+          params: { path: { id: roadmapId, branchModuleId } },
+          body: { chosenModuleId },
+        }),
+      ),
+    onSuccess: () => invalidateStudy(qc),
+  })
+}

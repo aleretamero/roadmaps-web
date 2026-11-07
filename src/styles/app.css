@@ -55,3 +55,12 @@
     --cols: 12 !important;
   }
 }
+
+/* Fundo pontilhado do mapa do roadmap. */
+@utility bg-dots-map {
+  background-image: radial-gradient(
+    var(--color-line-strong) 1px,
+    transparent 1px
+  );
+  background-size: 22px 22px;
+}
