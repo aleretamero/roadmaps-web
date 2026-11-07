@@ -29,4 +29,9 @@ export default [
       'pnpm/json-enforce-catalog': 'off',
     },
   },
+  {
+    // Código copiado do shadcn/ui: mantido como vem do registro.
+    files: ['src/components/ui/**'],
+    rules: { 'no-shadow': 'off' },
+  },
 ]
