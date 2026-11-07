@@ -391,11 +391,28 @@ export function LogSessionForm({
   )
 }
 
+export type LogOptions = {
+  /** Atividade já marcada (padrão: a da etapa atual). */
+  preset?: SessionAction
+  /** Dia da sessão (padrão: hoje). */
+  day?: string
+}
+
+/** Valores iniciais de "Quando?" para um dia escolhido fora do modal (ex.: na Agenda). */
+export function whenFor(
+  day: string | undefined,
+  today: string,
+): Partial<LogSessionValues> {
+  if (!day || day === today) return {}
+  if (day === addDays(today, -1)) return { when: 'yesterday' }
+  return { when: 'other', date: day }
+}
+
 export type LogSessionDialogProps = {
   topicId: number | null
   open: boolean
   onOpenChange: (open: boolean) => void
-  preset?: SessionAction
+  options?: LogOptions
 }
 
 /** Modal Registrar sessão de um tópico: busca o tópico, grava a sessão e avisa o resultado. */
@@ -403,7 +420,7 @@ export function LogSessionDialog({
   topicId,
   open,
   onOpenChange,
-  preset,
+  options,
 }: LogSessionDialogProps) {
   return (
     <Dialog open={open && topicId !== null} onOpenChange={onOpenChange}>
@@ -412,7 +429,7 @@ export function LogSessionDialog({
           <LogSessionBody
             key={topicId}
             topicId={topicId}
-            preset={preset}
+            options={options}
             onClose={() => onOpenChange(false)}
           />
         )}
@@ -423,16 +440,17 @@ export function LogSessionDialog({
 
 function LogSessionBody({
   topicId,
-  preset,
+  options = {},
   onClose,
 }: {
   topicId: number
-  preset?: SessionAction
+  options?: LogOptions
   onClose: () => void
 }) {
   const { data, error: loadError } = useQuery(topicQuery(topicId))
   const register = useRegisterSession(topicId)
   const [error, setError] = useState<string | null>(null)
+  const [today] = useState(todayISO)
   if (loadError)
     return (
       <div className="flex flex-col gap-4 p-7">
@@ -462,7 +480,9 @@ function LogSessionBody({
   return (
     <LogSessionForm
       topic={data}
-      preset={preset}
+      preset={options.preset}
+      initial={whenFor(options.day, today)}
+      today={today}
       saving={register.isPending}
       error={error}
       onCancel={onClose}
@@ -473,7 +493,7 @@ function LogSessionBody({
           onSuccess: (res) => {
             const acts = ACTIONS.filter((a) => body[a])
             const when =
-              body.day === todayISO() ? 'hoje' : `em ${formatShort(body.day)}`
+              body.day === today ? 'hoje' : `em ${formatShort(body.day)}`
             const stage =
               res.topic.stage !== from
                 ? ` · ${stageLabel[res.topic.stage]}`
@@ -490,10 +510,10 @@ function LogSessionBody({
   )
 }
 
-type OpenLog = (topicId: number, preset?: SessionAction) => void
+type OpenLog = (topicId: number, options?: LogOptions) => void
 const LogSessionContext = createContext<OpenLog>(() => {})
 
-/** Abre o modal Registrar sessão de qualquer tela: `const log = useLogSession(); log(topic.id)`. */
+/** Abre o modal Registrar sessão de qualquer tela: `const log = useLogSession(); log(topic.id, { day })`. */
 export function useLogSession() {
   return useContext(LogSessionContext)
 }
@@ -506,11 +526,11 @@ export function LogSessionProvider({
 }) {
   const [state, setState] = useState<{
     topicId: number
-    preset?: SessionAction
+    options?: LogOptions
     open: boolean
   } | null>(null)
   const openLog = useCallback<OpenLog>(
-    (topicId, preset) => setState({ topicId, preset, open: true }),
+    (topicId, options) => setState({ topicId, options, open: true }),
     [],
   )
   return (
@@ -518,7 +538,7 @@ export function LogSessionProvider({
       {children}
       <LogSessionDialog
         topicId={state?.topicId ?? null}
-        preset={state?.preset}
+        options={state?.options}
         open={!!state?.open}
         onOpenChange={(o) => {
           if (!o) setState((s) => (s ? { ...s, open: false } : s))

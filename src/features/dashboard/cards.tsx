@@ -15,6 +15,7 @@ import { stageLabel } from '@/lib/stage'
 import { cn } from '@/lib/utils'
 import { DashCard } from './DashCard'
 import { useLogSession } from '@/components/LogSession'
+import { useReschedule } from '@/components/Reschedule'
 
 type Dashboard = Schemas['Dashboard']
 type DashTopic = Schemas['DashboardTopic']
@@ -516,6 +517,7 @@ export function AttentionCard({
   className?: string
 }) {
   const log = useLogSession()
+  const reschedule = useReschedule()
   return (
     <DashCard
       title="Precisa de atenção"
@@ -553,14 +555,14 @@ export function AttentionCard({
                   Registrar
                 </button>
               ) : (
-                <Link
-                  to="/topics/$topicId"
-                  params={{ topicId: String(t.topic.id) }}
+                <button
+                  type="button"
+                  onClick={() => reschedule(t.topic.id, { mode: 'move' })}
                   aria-label={`Reagendar ${t.topic.title}`}
                   className="inline-flex h-8 flex-none items-center rounded-lg border border-line-strong bg-surface px-2.5 text-[13px] font-medium hover:bg-canvas"
                 >
                   Reagendar
-                </Link>
+                </button>
               )}
             </li>
           ))}
