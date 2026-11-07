@@ -14,6 +14,7 @@ import {
 import { stageLabel } from '@/lib/stage'
 import { cn } from '@/lib/utils'
 import { DashCard } from './DashCard'
+import { useLogSession } from '@/components/LogSession'
 
 type Dashboard = Schemas['Dashboard']
 type DashTopic = Schemas['DashboardTopic']
@@ -45,17 +46,17 @@ function TopicLink({
 }
 
 function RegisterLink({ item }: { item: DashTopic }) {
+  const log = useLogSession()
   return (
-    <Link
-      to="/topics/$topicId"
-      params={{ topicId: String(item.topic.id) }}
-      search={{ log: 1 }}
+    <button
+      type="button"
+      onClick={() => log(item.topic.id)}
       aria-label={`Registrar sessão em ${item.topic.title}`}
       className="inline-flex h-9 flex-none items-center gap-1.5 rounded-[10px] border border-ink bg-surface px-3 text-sm font-medium hover:bg-canvas"
     >
       <Plus className="size-3" strokeWidth={2.4} aria-hidden="true" />
       Registrar
-    </Link>
+    </button>
   )
 }
 
@@ -72,6 +73,7 @@ export function TodayCard({
   resume: Dashboard['resume']
   className?: string
 }) {
+  const log = useLogSession()
   // Pendentes primeiro, depois os já registrados hoje.
   const sorted = [...items].sort(
     (a, b) =>
@@ -90,14 +92,13 @@ export function TodayCard({
           <span className="text-ink-strong">Nada agendado para hoje.</span>
           {resume && (
             <>
-              <Link
-                to="/topics/$topicId"
-                params={{ topicId: String(resume.topic.id) }}
-                search={{ log: 1 }}
+              <button
+                type="button"
+                onClick={() => log(resume.topic.id)}
                 className="inline-flex h-10 items-center rounded-[10px] bg-ink px-3.5 font-medium text-surface hover:opacity-90"
               >
                 Continuar “{resume.topic.title}”
-              </Link>
+              </button>
               <span className="text-xs text-ink-soft">
                 Último registro{' '}
                 {resume.lastSessionOn
@@ -514,6 +515,7 @@ export function AttentionCard({
   items: Dashboard['attention']
   className?: string
 }) {
+  const log = useLogSession()
   return (
     <DashCard
       title="Precisa de atenção"
@@ -541,14 +543,25 @@ export function AttentionCard({
                   {attentionReason(t, date)} · {t.topic.roadmapName}
                 </span>
               </TopicLink>
-              <Link
-                to="/topics/$topicId"
-                params={{ topicId: String(t.topic.id) }}
-                search={{ log: 1 }}
-                className="inline-flex h-8 flex-none items-center rounded-lg border border-line-strong bg-surface px-2.5 text-[13px] font-medium hover:bg-canvas"
-              >
-                {t.attentionReason === 'stalled' ? 'Registrar' : 'Reagendar'}
-              </Link>
+              {t.attentionReason === 'stalled' ? (
+                <button
+                  type="button"
+                  onClick={() => log(t.topic.id)}
+                  aria-label={`Registrar sessão em ${t.topic.title}`}
+                  className="inline-flex h-8 flex-none items-center rounded-lg border border-line-strong bg-surface px-2.5 text-[13px] font-medium hover:bg-canvas"
+                >
+                  Registrar
+                </button>
+              ) : (
+                <Link
+                  to="/topics/$topicId"
+                  params={{ topicId: String(t.topic.id) }}
+                  aria-label={`Reagendar ${t.topic.title}`}
+                  className="inline-flex h-8 flex-none items-center rounded-lg border border-line-strong bg-surface px-2.5 text-[13px] font-medium hover:bg-canvas"
+                >
+                  Reagendar
+                </Link>
+              )}
             </li>
           ))}
         </ul>

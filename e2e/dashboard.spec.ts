@@ -13,10 +13,10 @@ test.describe('painel', () => {
     const today = page.getByRole('region', { name: 'Hoje' })
     await expect(today.getByText('Programação assíncrona')).toBeVisible()
     await expect(
-      today.getByRole('link', {
+      today.getByRole('button', {
         name: 'Registrar sessão em Programação assíncrona',
       }),
-    ).toHaveAttribute('href', /\/topics\/\d+\?log=1/)
+    ).toBeVisible()
 
     const week = page.getByRole('region', { name: 'Sua semana' })
     await expect(week.getByRole('listitem')).toHaveCount(7)
@@ -64,7 +64,7 @@ test.describe('painel', () => {
       const today = page.getByRole('region', { name: 'Hoje' })
       await expect(today.getByText('Nada agendado para hoje.')).toBeVisible()
       await expect(
-        today.getByRole('link', { name: /^Continuar “/ }),
+        today.getByRole('button', { name: /^Continuar “/ }),
       ).toBeVisible()
     })
   })

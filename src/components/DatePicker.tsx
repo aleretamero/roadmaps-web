@@ -20,6 +20,12 @@ export type DatePickerProps = {
   /** Discreto quando vazio (aparece forte ao passar o mouse/focar). */
   quiet?: boolean
   className?: string
+  /** Último dia que dá para escolher (yyyy-mm-dd). */
+  max?: string
+  /** Alinhamento do calendário em relação ao botão. */
+  align?: 'start' | 'end'
+  /** Classes extras do botão. */
+  buttonClassName?: string
 }
 
 /** Escolher uma data de calendário (Popover + Calendar do shadcn, em pt-BR). */
@@ -30,6 +36,9 @@ export function DatePicker({
   placeholder = 'Data',
   quiet = false,
   className,
+  max,
+  align = 'end',
+  buttonClassName,
 }: DatePickerProps) {
   const [open, setOpen] = useState(false)
   const selected = value ? parseISODate(value) : undefined
@@ -46,18 +55,20 @@ export function DatePicker({
                 ? 'border-line-strong text-ink'
                 : 'border-transparent text-ink-soft hover:border-line',
               quiet && !value && 'opacity-100',
+              buttonClassName,
             )}
           >
             <CalendarDays className="size-3.5" aria-hidden="true" />
             {value ? formatShort(value) : placeholder}
           </button>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="end">
+        <PopoverContent className="w-auto p-0" align={align}>
           <Calendar
             mode="single"
             locale={ptBR}
             selected={selected}
             defaultMonth={selected}
+            disabled={max ? { after: parseISODate(max) } : undefined}
             onSelect={(d) => {
               onChange(d ? toISODate(d) : '')
               setOpen(false)

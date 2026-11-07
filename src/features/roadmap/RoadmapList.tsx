@@ -42,6 +42,7 @@ import {
   orderedModules,
 } from './listOps'
 import type { ReorderChange } from './listOps'
+import { useLogSession } from '@/components/LogSession'
 
 type Roadmap = Schemas['RoadmapDetail']
 type ModuleNode = Schemas['ModuleNode']
@@ -63,6 +64,7 @@ function TopicRow({
   number: string
   onNudge: (delta: -1 | 1) => void
 }) {
+  const log = useLogSession()
   const {
     setNodeRef,
     transform,
@@ -137,14 +139,8 @@ function TopicRow({
           </IconButton>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem asChild>
-            <Link
-              to="/topics/$topicId"
-              params={{ topicId: String(topic.id) }}
-              search={{ log: 1 }}
-            >
-              Registrar sessão
-            </Link>
+          <DropdownMenuItem onSelect={() => log(topic.id)}>
+            Registrar sessão
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
             <Link

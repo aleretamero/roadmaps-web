@@ -17,9 +17,9 @@ test.describe('aba Progresso', () => {
     ).toContainText('Roadmap iniciado em')
     await expectAccessible()
     await page
-      .getByRole('link', { name: 'Registrar sessão em Índices' })
+      .getByRole('button', { name: 'Registrar sessão em Índices' })
       .click()
-    await expect(page).toHaveURL(/\/topics\/\d+\?log=1$/)
+    await expect(page.getByRole('dialog', { name: 'Índices' })).toBeVisible()
   })
 
   test('comparação visual com o protótipo', async ({

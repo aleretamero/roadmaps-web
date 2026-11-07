@@ -16,6 +16,7 @@ import type { Schemas } from '@/lib/api/client'
 import { formatShort, relativeDay, todayISO } from '@/lib/date'
 import { stageLabel } from '@/lib/stage'
 import { cn } from '@/lib/utils'
+import { useLogSession } from '@/components/LogSession'
 
 type Module = Schemas['ModuleDetail']
 type Topic = Schemas['TopicSummary']
@@ -71,6 +72,7 @@ function TopicRow({
   index: number
   today: string
 }) {
+  const log = useLogSession()
   const details = topicDetails(t, today)
   const done = t.stage === 'completed'
   return (
@@ -115,14 +117,8 @@ function TopicRow({
             </IconButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem asChild>
-              <Link
-                to="/topics/$topicId"
-                params={{ topicId: String(t.id) }}
-                search={{ log: 1 }}
-              >
-                Registrar sessão
-              </Link>
+            <DropdownMenuItem onSelect={() => log(t.id)}>
+              Registrar sessão
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
               <Link

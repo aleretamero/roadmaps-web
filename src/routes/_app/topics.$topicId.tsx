@@ -7,6 +7,7 @@ import {
   ReopenStageDialog,
 } from '@/features/topic/TopicDialogs'
 import { TopicPage } from '@/features/topic/TopicPage'
+import { LogSessionDialog } from '@/components/LogSession'
 import type { TopicTab } from '@/features/topic/TopicPage'
 import { errorMessage } from '@/lib/api/errors'
 import {
@@ -28,7 +29,7 @@ const placeholder = (text: string) => (
   </p>
 )
 
-// `?log=1` abre o modal de sessão, que chega na FU13.
+// `?log=1` abre o modal Registrar sessão (link do lembrete e do botão da tela).
 export const Route = createFileRoute('/_app/topics/$topicId')({
   validateSearch: (search: Record<string, unknown>): TopicSearch => ({
     ...(TABS.includes(search.tab as (typeof TABS)[number])
@@ -95,6 +96,13 @@ function Topic() {
             'As referências do tópico estão sendo construídas.',
           ),
           notes: placeholder('As anotações do tópico estão sendo construídas.'),
+        }}
+      />
+      <LogSessionDialog
+        topicId={id}
+        open={!!search.log}
+        onOpenChange={(o) => {
+          if (!o) setSearch({ ...search, log: undefined })
         }}
       />
       <EditTopicDialog
