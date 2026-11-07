@@ -39,3 +39,12 @@
   );
   background-size: 22px 22px;
 }
+
+/* Fundo pontilhado da tela de login. */
+@utility bg-dots-login {
+  background-image: radial-gradient(
+    var(--color-line-strong) 1px,
+    transparent 1px
+  );
+  background-size: 22px 22px;
+}

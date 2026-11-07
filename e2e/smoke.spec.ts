@@ -30,3 +30,19 @@ test.describe('fumaça', () => {
     expect(today).toBe('2026-11-07T13:00:00.000Z')
   })
 })
+
+test.describe('fumaça do fluxo principal', () => {
+  test.use({ scenario: 'deslogado' })
+  test('landing → login → painel', async ({ page, open }) => {
+    await open('/')
+    await page
+      .getByRole('link', { name: /^Entrar/ })
+      .first()
+      .click()
+    await page.getByRole('button', { name: 'Continuar com GitHub' }).click()
+    await expect(page).toHaveURL(/\/dashboard$/)
+    await expect(
+      page.getByRole('navigation', { name: 'Principal' }),
+    ).toBeVisible()
+  })
+})

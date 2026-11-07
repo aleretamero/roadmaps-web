@@ -1,27 +1,71 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { LogoMark } from '@/components/Logo'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { useQueryClient } from '@tanstack/react-query'
+import { useState } from 'react'
+import { LoginCard } from '@/features/auth/LoginCard'
+import { preferencesQuery } from '@/lib/api/queries'
+import { AUTH_PROVIDERS, startLogin } from '@/lib/auth'
+import type { AuthProvider } from '@/lib/auth'
+import { homePath } from '@/lib/home'
 import { safeRedirect } from '@/lib/redirect'
+import { useRedirectWhenLoggedIn } from '@/lib/useRedirectWhenLoggedIn'
 
-type LoginSearch = { redirect?: string }
+type LoginSearch = { redirect?: string; error?: string }
 
-// Tela provisória do shell (FS10): recebe o `redirect` da guarda de rota.
-// Os provedores e o fluxo de entrar chegam na FU02.
+/** Erros que o callback do OAuth devolve em `?error=`. */
+const ERRORS: Record<string, string> = {
+  access_denied:
+    'Não foi possível entrar: a autorização foi cancelada no GitHub. Tente de novo.',
+}
+const GENERIC_ERROR = 'Não foi possível entrar agora. Tente de novo.'
+
 export const Route = createFileRoute('/login')({
   validateSearch: (search: Record<string, unknown>): LoginSearch => {
     const redirect = safeRedirect(search.redirect)
-    return redirect ? { redirect } : {}
+    const error = typeof search.error === 'string' ? search.error : undefined
+    return { ...(redirect ? { redirect } : {}), ...(error ? { error } : {}) }
   },
+  head: () => ({ meta: [{ title: 'Entrar · Roadmaps' }] }),
   component: Login,
 })
 
 function Login() {
+  const search = Route.useSearch()
+  // Confere de novo: o Router mantém na busca chaves que o validateSearch descartou.
+  const redirect = safeRedirect(search.redirect)
+  const error = search.error
+  const navigate = useNavigate()
+  const qc = useQueryClient()
+  const [busy, setBusy] = useState<AuthProvider | null>(null)
+  const [failed, setFailed] = useState(false)
+  useRedirectWhenLoggedIn(redirect)
+
+  const login = async (provider: AuthProvider) => {
+    setBusy(provider)
+    setFailed(false)
+    try {
+      const navigateHere = await startLogin(provider, redirect)
+      if (!navigateHere) return // o navegador já está indo para o provedor
+      const target =
+        redirect ?? homePath((await qc.fetchQuery(preferencesQuery())).homePage)
+      await navigate({ href: target, replace: true })
+    } catch {
+      setFailed(true)
+      setBusy(null)
+    }
+  }
+
+  const message = failed
+    ? GENERIC_ERROR
+    : error
+      ? (ERRORS[error] ?? GENERIC_ERROR)
+      : null
+
   return (
-    <main className="grid min-h-dvh place-items-center bg-canvas px-4">
-      <div className="w-full max-w-sm rounded-xl border border-line bg-surface p-8 text-center">
-        <LogoMark className="mx-auto text-ink-strong" />
-        <h1 className="mt-4 text-2xl font-semibold text-ink-strong">Entrar</h1>
-        <p className="mt-2 text-ink-muted">Entre para ver seus roadmaps.</p>
-      </div>
-    </main>
+    <LoginCard
+      providers={AUTH_PROVIDERS}
+      busy={busy}
+      error={message}
+      onLogin={(p) => void login(p)}
+    />
   )
 }

@@ -5,11 +5,13 @@ import {
   useNavigate,
 } from '@tanstack/react-router'
 import { useSuspenseQuery } from '@tanstack/react-query'
+import { useEffect } from 'react'
 import { toast } from 'sonner'
 import { AppHeader } from '@/features/app-shell/AppHeader'
 import { PagePending, RouteError } from '@/components/RouteStates'
 import { isApiError } from '@/lib/api/errors'
 import { meQuery, useLogout } from '@/lib/api/queries'
+import { takeWelcome } from '@/lib/auth'
 
 /**
  * Layout das telas logadas. Sem sessão (`GET /me` → 401) manda para
@@ -64,6 +66,11 @@ function Header() {
   const { data: me } = useSuspenseQuery(meQuery())
   const logout = useLogout()
   const navigate = useNavigate()
+  const firstName = me.name.split(' ')[0]
+  // Acabou de entrar: "Olá, Marina!" uma vez, como no protótipo.
+  useEffect(() => {
+    if (takeWelcome()) toast.success(`Olá, ${firstName}!`)
+  }, [firstName])
   return (
     <AppHeader
       name={me.name}

@@ -36,7 +36,10 @@ export const test = base.extend<Fixtures>({
       if (
         m.type() === 'error' &&
         !m.text().startsWith('Failed to load resource') &&
-        !m.text().includes('using the error boundary you provided')
+        !m.text().includes('using the error boundary you provided') &&
+        // Aviso só do modo dev do React com rotas lazy do TanStack Router
+        // carregando pela primeira vez (não acontece no build).
+        !m.text().includes('did not call use() when it finished')
       )
         errors.push(m.text())
     })
