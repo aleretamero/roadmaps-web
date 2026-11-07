@@ -383,7 +383,7 @@ export function RoadmapsCard({
         <div className="flex flex-col items-start gap-2.5 rounded-xl bg-canvas px-4 py-3.5">
           <span className="text-ink-strong">Você ainda não tem roadmaps.</span>
           <Link
-            to="/roadmaps"
+            to="/roadmaps/new"
             className="inline-flex h-10 items-center rounded-[10px] bg-ink px-3.5 font-medium text-surface hover:opacity-90"
           >
             Criar o primeiro roadmap
