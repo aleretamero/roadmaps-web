@@ -21,7 +21,9 @@
     "routes": "tsr generate",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "test:stories": "vitest run --project storybook"
+    "test:stories": "vitest run --project storybook",
+    "prototype": "node scripts/serve-prototype.mjs",
+    "prototype:capture": "node scripts/capture-prototype.mjs"
   },
   "dependencies": {
     "@fontsource-variable/geist": "^5.3.0",
@@ -48,6 +50,7 @@
   "devDependencies": {
     "@storybook/addon-a11y": "^10.6.6",
     "@storybook/addon-docs": "^10.6.6",
+    "@storybook/addon-mcp": "10.6.6",
     "@storybook/addon-vitest": "^10.6.6",
     "@storybook/react-vite": "^10.6.6",
     "@tanstack/devtools-vite": "0.8.6",

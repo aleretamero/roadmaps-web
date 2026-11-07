@@ -5,3 +5,4 @@ dist
 .tanstack
 coverage
 storybook-static
+docs/prototype

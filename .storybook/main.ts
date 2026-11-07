@@ -6,6 +6,8 @@ const config: StorybookConfig = {
     '@storybook/addon-docs',
     '@storybook/addon-a11y',
     '@storybook/addon-vitest',
+    // MCP em http://localhost:6006/mcp para os agentes listarem e lerem as stories
+    '@storybook/addon-mcp',
   ],
   framework: {
     name: '@storybook/react-vite',
