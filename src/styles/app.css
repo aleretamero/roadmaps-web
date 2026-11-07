@@ -48,3 +48,10 @@
   );
   background-size: 22px 22px;
 }
+
+/* Mapa de calor: menos colunas no celular (ActivityHeatmap). */
+@media (width < 40rem) {
+  [data-compact-heat] {
+    --cols: 12 !important;
+  }
+}

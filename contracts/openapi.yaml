@@ -2900,20 +2900,41 @@ components:
           type: integer
         days:
           type: array
+          description: Um item por dia, do domingo de `weeks - 1` semanas atrás até hoje (semanas completas, começando no domingo).
           items:
             type: object
             properties:
               date: *id011
               count:
                 type: integer
+                description: Sessões registradas no dia.
               topics:
                 type: array
                 items:
                   type: string
+              entries:
+                type: array
+                description: Tópicos trabalhados no dia e o que foi feito em cada um.
+                items:
+                  type: object
+                  properties:
+                    topicId:
+                      type: integer
+                    title:
+                      type: string
+                    actions:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/SessionAction'
+                  required:
+                    - topicId
+                    - title
+                    - actions
             required:
               - date
               - count
               - topics
+              - entries
         totals:
           type: object
           properties:

@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { expect, screen, userEvent, within } from 'storybook/test'
+import { expect, screen, userEvent, waitFor, within } from 'storybook/test'
 import { InfoTooltip } from './InfoTooltip'
 
 const meta = {
@@ -27,6 +27,8 @@ export const Aberto: Story = {
     await userEvent.click(
       canvas.getByRole('button', { name: 'Atalhos do editor' }),
     )
-    await expect(await screen.findByText(/para publicar/)).toBeVisible()
+    // O popover anima ao abrir: espera ficar visível.
+    const text = await screen.findByText(/para publicar/)
+    await waitFor(() => expect(text).toBeVisible(), { timeout: 3000 })
   },
 }
