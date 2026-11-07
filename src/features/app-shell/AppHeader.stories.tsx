@@ -7,7 +7,12 @@ const meta = {
   title: 'App/Cabeçalho',
   component: AppHeader,
   parameters: { layout: 'fullscreen' },
-  args: { name: 'Marina Costa', email: 'marina@exemplo.com', onLogout: fn() },
+  args: {
+    name: 'Marina Costa',
+    email: 'marina@exemplo.com',
+    onLogout: fn(),
+    onSearch: fn(),
+  },
   decorators: [withRouter('/dashboard')],
 } satisfies Meta<typeof AppHeader>
 

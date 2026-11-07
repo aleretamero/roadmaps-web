@@ -1,4 +1,5 @@
 import { Link, useRouterState } from '@tanstack/react-router'
+import { Search } from 'lucide-react'
 import { LogoMark } from '@/components/Logo'
 import { cn } from '@/lib/utils'
 import { AccountMenu } from './AccountMenu'
@@ -20,10 +21,13 @@ const NAV = [
   { section: 'schedule', to: '/schedule', label: 'Agenda' },
 ] as const
 
-export type AppHeaderProps = Omit<AccountMenuProps, 'className'>
+export type AppHeaderProps = Omit<AccountMenuProps, 'className'> & {
+  /** Abre a busca global (o mesmo que Ctrl+K). */
+  onSearch?: () => void
+}
 
 /** Cabeçalho das telas logadas: marca, navegação principal e menu da conta. */
-export function AppHeader(props: AppHeaderProps) {
+export function AppHeader({ onSearch, ...props }: AppHeaderProps) {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
   const current = sectionOf(pathname)
   return (
@@ -60,7 +64,26 @@ export function AppHeader(props: AppHeaderProps) {
             )
           })}
         </nav>
-        <AccountMenu {...props} className="order-2 ml-auto md:order-none" />
+        {onSearch && (
+          <button
+            type="button"
+            onClick={onSearch}
+            aria-keyshortcuts="Control+K"
+            className="order-4 flex h-11 w-full items-center gap-2.5 rounded-xl border border-line-control bg-canvas px-3.5 text-left text-ink-muted hover:border-ink-faint md:order-none md:ml-auto md:w-[380px]"
+          >
+            <Search className="size-4 flex-none" aria-hidden="true" />
+            <span className="flex-1 truncate">
+              Buscar tópicos, anotações e arquivos
+            </span>
+            <kbd className="hidden rounded border border-line bg-surface px-1.5 font-sans text-[11px] text-ink-muted sm:inline">
+              Ctrl K
+            </kbd>
+          </button>
+        )}
+        <AccountMenu
+          {...props}
+          className={cn('order-2 ml-auto md:order-none', onSearch && 'md:ml-0')}
+        />
       </div>
     </header>
   )

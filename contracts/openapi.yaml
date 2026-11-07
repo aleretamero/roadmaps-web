@@ -221,6 +221,12 @@ paths:
               - topics
               - notes
               - files
+        - name: includeArchived
+          in: query
+          required: false
+          description: Inclui tópicos de roadmaps arquivados (padrão false).
+          schema:
+            type: boolean
         - &id006
           name: limit
           in: query

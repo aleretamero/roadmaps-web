@@ -1,5 +1,5 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { toast } from 'sonner'
 import { DatePicker } from '@/components/DatePicker'
 import { Button } from '@/components/ui/button'
@@ -20,6 +20,7 @@ import {
   useApplySchedule,
 } from '@/lib/api/queries'
 import { formatPlan, formatShort, parseISODate, todayISO } from '@/lib/date'
+import { useDebounced } from '@/lib/useDebounced'
 import { cn } from '@/lib/utils'
 import {
   WEEKDAYS,
@@ -31,16 +32,6 @@ import {
 import type { Weekday } from './autoSchedule'
 
 type Roadmap = Schemas['RoadmapDetail']
-
-/** Valor que só muda depois de `ms` sem mudanças (para não pedir a prévia a cada clique). */
-function useDebounced<T>(value: T, ms: number) {
-  const [v, setV] = useState(value)
-  useEffect(() => {
-    const t = setTimeout(() => setV(value), ms)
-    return () => clearTimeout(t)
-  }, [value, ms])
-  return v
-}
 
 const lower = (s: string) => s.toLocaleLowerCase('pt-BR')
 

@@ -163,6 +163,30 @@ export const schedulePreviewQuery = (
     staleTime: 0,
   })
 
+export type SearchType = 'topics' | 'notes' | 'files'
+
+/** Busca global, em páginas (`nextCursor`). */
+export const searchPagesQuery = (
+  q: string,
+  type: SearchType | undefined,
+  includeArchived: boolean,
+) =>
+  infiniteQueryOptions({
+    queryKey: [...keys.search(q, type), includeArchived] as const,
+    queryFn: ({ pageParam }) =>
+      unwrap(
+        api.GET('/search', {
+          params: {
+            query: { q, type, includeArchived, limit: 10, cursor: pageParam },
+          },
+        }),
+      ),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (last) => last.nextCursor ?? undefined,
+    enabled: q.trim().length >= 2,
+    placeholderData: (prev) => prev,
+  })
+
 export const searchQuery = (q: string, type?: 'topics' | 'notes' | 'files') =>
   queryOptions({
     queryKey: keys.search(q, type),
