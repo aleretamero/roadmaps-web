@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import { AddTopicsDialog } from '@/features/module/AddTopicsDialog'
 import { EditModuleDialog } from '@/features/module/EditModuleDialog'
 import { ModulePage } from '@/features/module/ModulePage'
+import { ModuleTimeline } from '@/features/module/ModuleTimeline'
 import { errorMessage } from '@/lib/api/errors'
 import {
   moduleQuery,
@@ -68,9 +69,7 @@ function Module() {
             toast.error(errorMessage(e))
           }
         }}
-        timeline={placeholder(
-          'A linha do tempo do módulo está sendo construída.',
-        )}
+        timeline={<ModuleTimeline moduleId={id} />}
         notes={placeholder('As anotações do módulo estão sendo construídas.')}
       />
       <AddTopicsDialog

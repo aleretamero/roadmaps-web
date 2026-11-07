@@ -143,6 +143,8 @@ export type LogSessionFormProps = {
   preset?: SessionAction
   /** Valores iniciais (stories e testes). */
   initial?: Partial<LogSessionValues>
+  /** `edit`: editar uma sessão já registrada (a etapa é recalculada pelas sessões). */
+  mode?: 'log' | 'edit'
   today?: string
   saving?: boolean
   error?: string | null
@@ -155,6 +157,7 @@ export function LogSessionForm({
   topic,
   preset,
   initial,
+  mode = 'log',
   today = todayISO(),
   saving = false,
   error,
@@ -212,7 +215,7 @@ export function LogSessionForm({
       <div className="flex flex-col gap-5 overflow-y-auto px-5 pt-6 pb-5 sm:px-7">
         <header className="flex flex-col gap-1 pr-8">
           <span className="text-[11px] font-semibold tracking-[0.06em] text-ink-muted uppercase">
-            Registrar sessão
+            {mode === 'edit' ? 'Editar sessão' : 'Registrar sessão'}
           </span>
           <DialogTitle className="text-[22px] font-semibold">
             {topic.title}
@@ -359,13 +362,16 @@ export function LogSessionForm({
             'flex items-start gap-3 rounded-xl px-4 py-3 text-sm',
             problem
               ? 'bg-danger-soft text-danger'
-              : to !== topic.stage
+              : mode === 'log' && to !== topic.stage
                 ? OUTCOME_TONE[to]
                 : 'bg-surface-sunken text-ink-strong',
           )}
         >
           <ArrowRight className="mt-0.5 size-4 flex-none" aria-hidden="true" />
-          {problem ?? sessionOutcome(topic.stage, values.actions, day)}
+          {problem ??
+            (mode === 'edit'
+              ? 'A etapa do tópico é recalculada a partir de todas as sessões.'
+              : sessionOutcome(topic.stage, values.actions, day))}
         </p>
         {error && (
           <p
@@ -384,7 +390,11 @@ export function LogSessionForm({
           Cancelar
         </Button>
         <Button type="submit" size="lg" disabled={!!problem || saving}>
-          {saving ? 'Salvando…' : 'Salvar registro'}
+          {saving
+            ? 'Salvando…'
+            : mode === 'edit'
+              ? 'Salvar alterações'
+              : 'Salvar registro'}
         </Button>
       </DialogFooter>
     </form>
