@@ -1,25 +1,100 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { PageContainer, PageIntro } from '@/components/PageIntro'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { useSuspenseQuery } from '@tanstack/react-query'
+import { useState } from 'react'
+import { toast } from 'sonner'
+import { EditModuleDialog } from '@/features/module/EditModuleDialog'
+import { ModulePage } from '@/features/module/ModulePage'
+import { errorMessage } from '@/lib/api/errors'
+import {
+  moduleQuery,
+  useCreateTopics,
+  useUpdateModule,
+} from '@/lib/api/queries'
 
-type ModuleSearch = { tab?: string; add?: 1; edit?: 1 }
+type ModuleSearch = { tab?: 'timeline' | 'notes'; add?: 1; edit?: 1 }
 
-// Tela provisória: o detalhe do módulo chega na FU10.
+const placeholder = (text: string) => (
+  <p className="rounded-2xl border border-dashed border-line-control bg-surface p-8 text-center text-ink-muted">
+    {text}
+  </p>
+)
+
 export const Route = createFileRoute('/_app/modules/$moduleId')({
   validateSearch: (search: Record<string, unknown>): ModuleSearch => ({
-    ...(typeof search.tab === 'string' ? { tab: search.tab } : {}),
+    ...(search.tab === 'timeline' || search.tab === 'notes'
+      ? { tab: search.tab }
+      : {}),
     ...(search.add === 1 || search.add === '1' ? { add: 1 as const } : {}),
     ...(search.edit === 1 || search.edit === '1' ? { edit: 1 as const } : {}),
   }),
-  component: Page,
+  loader: ({ context, params }) =>
+    context.queryClient.ensureQueryData(moduleQuery(Number(params.moduleId))),
+  head: ({ loaderData }) => ({
+    meta: [{ title: `${loaderData?.title ?? 'Módulo'} · Roadmaps` }],
+  }),
+  component: Module,
 })
 
-function Page() {
+function Module() {
+  const { moduleId } = Route.useParams()
+  const search = Route.useSearch()
+  const id = Number(moduleId)
+  const { data } = useSuspenseQuery(moduleQuery(id))
+  const navigate = useNavigate({ from: Route.fullPath })
+  const update = useUpdateModule(id)
+  const create = useCreateTopics(id)
+  const [editError, setEditError] = useState<string | null>(null)
+  const setSearch = (next: ModuleSearch) =>
+    void navigate({ search: next, replace: true })
+
   return (
-    <PageContainer>
-      <PageIntro
-        title="Módulo"
-        description="Esta tela está sendo construída."
+    <>
+      <ModulePage
+        module={data}
+        tab={search.tab ?? 'topics'}
+        onTabChange={(tab) =>
+          setSearch({ ...(tab === 'topics' ? {} : { tab }) })
+        }
+        onEdit={() => setSearch({ ...search, edit: 1 })}
+        // O modal "Adicionar tópicos" é a FU11: abre por `?add=1`.
+        onAddTopics={() => setSearch({ ...search, add: 1 })}
+        adding={create.isPending}
+        onQuickAdd={async (title) => {
+          try {
+            await create.mutateAsync([{ title }])
+            toast.success('Tópico adicionado')
+          } catch (e) {
+            toast.error(errorMessage(e))
+          }
+        }}
+        timeline={placeholder(
+          'A linha do tempo do módulo está sendo construída.',
+        )}
+        notes={placeholder('As anotações do módulo estão sendo construídas.')}
       />
-    </PageContainer>
+      <EditModuleDialog
+        key={data.updatedAt}
+        open={!!search.edit}
+        onOpenChange={(o) => {
+          setEditError(null)
+          if (!o) setSearch({ ...search, edit: undefined })
+        }}
+        initial={{ title: data.title, description: data.description ?? '' }}
+        saving={update.isPending}
+        error={editError}
+        onSave={(values) =>
+          update.mutate(
+            { title: values.title, description: values.description || null },
+            {
+              onSuccess: () => {
+                toast.success('Módulo atualizado')
+                setSearch({ ...search, edit: undefined })
+              },
+              onError: (e) => setEditError(errorMessage(e)),
+            },
+          )
+        }
+      />
+    </>
   )
 }

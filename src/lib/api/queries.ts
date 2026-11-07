@@ -365,3 +365,15 @@ export function useRoadmapReorder(roadmapId: number) {
     },
   })
 }
+
+export function useUpdateModule(moduleId: number) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (body: Schemas['UpdateModuleRequest']) =>
+      unwrap(api.PATCH('/modules/{id}', { ...id(moduleId), body })),
+    onSuccess: (data) => {
+      qc.setQueryData(keys.modules.detail(moduleId), data)
+      invalidateStudy(qc)
+    },
+  })
+}
