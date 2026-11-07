@@ -1,10 +1,13 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useSuspenseQuery } from '@tanstack/react-query'
+import { useQuery, useSuspenseQuery } from '@tanstack/react-query'
+import { PagePending, RouteError } from '@/components/RouteStates'
 import { toast } from 'sonner'
+import { ProgressTab } from '@/features/roadmap/ProgressTab'
 import { RoadmapList } from '@/features/roadmap/RoadmapList'
 import { RoadmapPage } from '@/features/roadmap/RoadmapPage'
 import { errorMessage } from '@/lib/api/errors'
 import {
+  roadmapProgressQuery,
   roadmapQuery,
   useArchiveRoadmap,
   useChoosePath,
@@ -21,8 +24,13 @@ export const Route = createFileRoute('/_app/roadmaps/$roadmapId')({
     ...(search.view === 'list' ? { view: 'list' as const } : {}),
     ...(search.tab === 'progress' ? { tab: 'progress' as const } : {}),
   }),
-  loader: ({ context, params }) =>
-    context.queryClient.ensureQueryData(roadmapQuery(Number(params.roadmapId))),
+  loaderDeps: ({ search }) => ({ tab: search.tab }),
+  loader: async ({ context, params, deps }) => {
+    const id = Number(params.roadmapId)
+    if (deps.tab === 'progress')
+      void context.queryClient.prefetchQuery(roadmapProgressQuery(id))
+    return context.queryClient.ensureQueryData(roadmapQuery(id))
+  },
   head: ({ loaderData }) => ({
     meta: [
       {
@@ -82,11 +90,21 @@ function Roadmap() {
           }
         />
       }
-      progress={
-        <p className="rounded-[14px] border border-dashed border-line-control bg-surface p-8 text-center text-ink-muted">
-          O progresso por módulo está sendo construído.
-        </p>
-      }
+      progress={<Progress roadmapId={id} />}
     />
   )
+}
+
+function Progress({ roadmapId }: { roadmapId: number }) {
+  const q = useQuery(roadmapProgressQuery(roadmapId))
+  if (q.isPending) return <PagePending />
+  if (q.isError)
+    return (
+      <RouteError
+        error={q.error}
+        reset={() => void q.refetch()}
+        info={undefined}
+      />
+    )
+  return <ProgressTab data={q.data} />
 }

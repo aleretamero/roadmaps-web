@@ -157,7 +157,14 @@ export function RoadmapPage({
         >
           Progresso
           {activeModules !== undefined && (
-            <span className="inline-grid h-5 min-w-5 place-items-center rounded-full bg-surface-sunken px-1.5 text-xs text-ink-muted">
+            <span
+              className={cn(
+                'inline-grid h-5 min-w-5 place-items-center rounded-full px-1.5 text-xs',
+                tab === 'progress'
+                  ? 'bg-ink text-surface'
+                  : 'bg-surface-sunken text-ink-muted',
+              )}
+            >
               {activeModules}
             </span>
           )}
