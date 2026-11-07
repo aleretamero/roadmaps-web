@@ -53,6 +53,11 @@ export const test = base.extend<Fixtures>({
       await page.waitForFunction(
         () => (window as Window & { __MOCK_READY__?: boolean }).__MOCK_READY__,
       )
+      // Espera o React hidratar o HTML do servidor (antes disso, cliques se perdem).
+      await page.waitForFunction(() => {
+        const el = document.body.firstElementChild
+        return !!el && Object.keys(el).some((k) => k.startsWith('__react'))
+      })
     })
   },
   expectAccessible: async ({ page }, use) => {

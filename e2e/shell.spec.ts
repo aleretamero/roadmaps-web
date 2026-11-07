@@ -90,8 +90,10 @@ test.describe('shell do app', () => {
     test.use({ scenario: 'erro-500' })
     test('mostra o erro com "Tentar de novo"', async ({ page, open }) => {
       await open('/dashboard')
+      // O QueryClient tenta de novo 2× em erro 5xx antes de desistir.
       await expect(page.getByRole('alert')).toContainText(
         'Não foi possível carregar esta página',
+        { timeout: 15_000 },
       )
       await expect(
         page.getByRole('button', { name: 'Tentar de novo' }),

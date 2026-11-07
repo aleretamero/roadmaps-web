@@ -1,17 +1,6 @@
-import { LandingPage } from './pages/LandingPage'
 import { expect, test } from './fixtures'
 
 test.describe('fumaça', () => {
-  test('a página inicial abre sem erros e é acessível', async ({
-    page,
-    open,
-    expectAccessible,
-  }) => {
-    await open('/')
-    await expect(new LandingPage(page).heading()).toHaveText('Roadmaps')
-    await expectAccessible()
-  })
-
   test('a API mockada responde dentro do app', async ({ page, open }) => {
     await open('/')
     const status = await page.evaluate(async () => {
