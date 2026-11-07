@@ -4,6 +4,8 @@ on:
   push:
     branches: [main]
   pull_request:
+  # Roda também o job "E2E contra a API real" (opcional).
+  workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -109,6 +111,49 @@ jobs:
         with:
           name: playwright-report
           path: playwright-report
+          retention-days: 14
+
+  # Opcional (FU24): só roda manualmente ou com a variável API_E2E=true no repositório.
+  # Sobe o roadmaps-api com Docker Compose e roda o fluxo completo contra ele.
+  e2e-api:
+    name: E2E contra a API real
+    if: github.event_name == 'workflow_dispatch' || vars.API_E2E == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: aleretamero/roadmaps-api
+          path: api
+      - name: Backend (Docker Compose)
+        working-directory: api
+        run: |
+          cp .env.example .env
+          docker compose --profile full up -d --build --wait
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Diferenças de contrato (vai para o resumo do job)
+        run: pnpm api:diff --from http://localhost:8080/openapi/v1.json >> "$GITHUB_STEP_SUMMARY" || true
+      - name: Navegador do Playwright
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Fluxo completo
+        env:
+          API_PROXY_TARGET: http://localhost:8080
+        run: pnpm e2e:api
+      - name: Logs do backend
+        if: failure()
+        working-directory: api
+        run: docker compose logs --no-color api | tail -200
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report-api
+          path: playwright-report-api
           retention-days: 14
 
   report:

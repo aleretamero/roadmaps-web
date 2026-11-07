@@ -15,4 +15,5 @@ __unconfig*
 storybook-static
 test-results
 playwright-report
+playwright-report-api
 blob-report
