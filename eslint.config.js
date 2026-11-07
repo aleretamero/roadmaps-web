@@ -17,6 +17,7 @@ export default [
       'prettier.config.js',
       'storybook-static',
       'docs/prototype',
+      'public/mockServiceWorker.js',
       '!.storybook',
     ],
   },

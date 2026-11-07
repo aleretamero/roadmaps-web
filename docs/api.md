@@ -20,3 +20,17 @@ O front conversa só com a API REST do [roadmaps-api](https://github.com/alereta
 1. Ajuste `contracts/openapi.yaml` primeiro (e o handler do mock).
 2. Explique a mudança no PR.
 3. Abra uma issue no `roadmaps-api` com a diferença, para o backend acompanhar.
+
+## API mockada (MSW)
+
+Em desenvolvimento (`.env.development` tem `VITE_API_MOCK=true`), no Storybook e nos testes, quem responde é o MSW com os handlers de `src/mocks/handlers/`, tipados pelo contrato.
+
+- **Banco em memória** (`src/mocks/db.ts`): os dados de exemplo do protótipo (Marina Costa; roadmaps Backend com .NET, Frontend, Algoritmos e System Design arquivado), com datas relativas a hoje e meses de sessões para o mapa de calor.
+- **Regras do backend** (`src/mocks/domain.ts`): etapa só avança por sessão, tópico novo no fim, progresso sem opcionais e sem alternativas não escolhidas, data prevista e atraso, sequência, agendamento automático (1 tópico por dia de estudo), `drive_not_connected` sem Drive, ciclo de dependência recusado, `If-Match` → 412.
+- **Cenários**: `padrao`, `vazio` (usuário novo), `deslogado` (401), `sem-drive`, `com-drive`, `erro-500`, `lento` (1,5 s por resposta).
+  - No app: `?mock=<cenário>` na URL (fica na aba até trocar).
+  - No Storybook: barra de ferramentas › Cenário, ou `parameters: { scenario: 'vazio' }` na story.
+  - Nos testes: `setScenario('vazio')` de `src/mocks`.
+- **Persistência**: `?mock-persist=1` guarda o banco no `localStorage` (para testar recarregando); `?mock-persist=0` desliga.
+- **Listas grandes**: `addRandomRoadmaps(db, n)` em `src/mocks/factories.ts` (faker com semente fixa).
+- **Rota nova no contrato** = handler novo: o teste `src/mocks/mocks.test.ts` falha se alguma rota do `openapi.yaml` não tiver handler.
