@@ -674,6 +674,64 @@ export function useDeleteResource(topicId: number) {
   })
 }
 
+function invalidateFiles(qc: QueryClient, topicId: number) {
+  void qc.invalidateQueries({ queryKey: keys.topics.files(topicId) })
+  void qc.invalidateQueries({ queryKey: keys.topics.detail(topicId) })
+}
+
+/** Atualiza a árvore depois de enviar arquivos (o envio em si fica em `upload.ts`). */
+export function useRefreshFiles(topicId: number) {
+  const qc = useQueryClient()
+  return () => invalidateFiles(qc, topicId)
+}
+
+export function useCreateFolder(topicId: number) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (path: string) =>
+      unwrap(
+        api.POST('/topics/{id}/folders', { ...id(topicId), body: { path } }),
+      ),
+    onSuccess: () => invalidateFiles(qc, topicId),
+  })
+}
+
+/** Renomeia ou move (arquivo ou pasta, com o que tem dentro). */
+export function useMoveFile(topicId: number) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (body: Schemas['MoveFileRequest']) =>
+      unwrap(api.POST('/topics/{id}/files/move', { ...id(topicId), body })),
+    onSuccess: () => invalidateFiles(qc, topicId),
+  })
+}
+
+export function useDeleteFile(topicId: number) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (path: string) =>
+      unwrap(
+        api.DELETE('/topics/{id}/files', {
+          params: { path: { id: topicId }, query: { path } },
+        }),
+      ),
+    onSuccess: () => invalidateFiles(qc, topicId),
+  })
+}
+
+/** Conteúdo do arquivo para a pré-visualização (texto ou imagem). */
+export const fileContentQuery = (fileId: number, as: 'text' | 'blob') =>
+  queryOptions({
+    queryKey: ['files', 'content', fileId, as] as const,
+    queryFn: () =>
+      unwrap<string | Blob>(
+        api.GET('/files/{id}/content', {
+          params: { path: { id: fileId } },
+          parseAs: as,
+        }),
+      ),
+  })
+
 /** Agendar qualquer tópico num dia (Agenda). */
 export function useScheduleTopic() {
   const qc = useQueryClient()

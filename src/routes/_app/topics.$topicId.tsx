@@ -7,6 +7,7 @@ import {
   ReopenStageDialog,
 } from '@/features/topic/TopicDialogs'
 import { TopicPage } from '@/features/topic/TopicPage'
+import { FileExplorer } from '@/features/topic/FileExplorer'
 import { FilesTab } from '@/features/topic/FilesTab'
 import { ResourcesPanel } from '@/features/topic/ResourcesPanel'
 import { TopicTimeline } from '@/features/topic/TopicTimeline'
@@ -26,12 +27,6 @@ import { stageLabel } from '@/lib/stage'
 
 type TopicSearch = { tab?: Exclude<TopicTab, 'timeline'>; log?: 1; edit?: 1 }
 const TABS = ['files', 'resources', 'notes'] as const
-
-const placeholder = (text: string) => (
-  <p className="rounded-2xl border border-dashed border-line-control bg-surface p-8 text-center text-ink-muted">
-    {text}
-  </p>
-)
 
 // `?log=1` abre o modal Registrar sessão (link do lembrete e do botão da tela).
 export const Route = createFileRoute('/_app/topics/$topicId')({
@@ -95,7 +90,7 @@ function Topic() {
           timeline: <TopicTimeline topic={data} />,
           files: (
             <FilesTab topicId={id}>
-              {placeholder('Os arquivos do tópico estão sendo construídos.')}
+              <FileExplorer topicId={id} />
             </FilesTab>
           ),
           resources: <ResourcesPanel topicId={id} />,
