@@ -13,3 +13,6 @@ __unconfig*
 
 *storybook.log
 storybook-static
+test-results
+playwright-report
+blob-report
